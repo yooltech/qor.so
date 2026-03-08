@@ -13,11 +13,22 @@ const EXPIRY_OPTIONS = [
   { label: "30 days", value: 43200 },
 ];
 
+export interface NoteEditOptions {
+  content: string;
+  format: "text" | "json";
+  password?: string;
+  slug?: string;
+  expiresIn?: number | null;
+}
+
 interface NoteEditorProps {
   initialContent?: string;
   initialFormat?: "text" | "json";
+  initialSlug?: string;
+  initialHasPassword?: boolean;
+  initialExpiresAt?: string | null;
   mode?: "create" | "edit";
-  onSave?: (content: string, format: "text" | "json") => void;
+  onSave?: (opts: NoteEditOptions) => void;
   onCancel?: () => void;
   saving?: boolean;
 }
@@ -25,6 +36,9 @@ interface NoteEditorProps {
 const NoteEditor = ({
   initialContent = "",
   initialFormat = "text",
+  initialSlug = "",
+  initialHasPassword = false,
+  initialExpiresAt,
   mode = "create",
   onSave,
   onCancel,
@@ -34,7 +48,7 @@ const NoteEditor = ({
   const [format, setFormat] = useState<"text" | "json">(initialFormat);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState("");
-  const [slug, setSlug] = useState("");
+  const [slug, setSlug] = useState(initialSlug);
   const [showProtection, setShowProtection] = useState(false);
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -49,7 +63,7 @@ const NoteEditor = ({
     }
 
     if (mode === "edit" && onSave) {
-      onSave(content, format);
+      onSave({ content, format, password: password || undefined, slug: slug || undefined, expiresIn });
       return;
     }
 
@@ -147,11 +161,14 @@ const NoteEditor = ({
             </label>
             <input
               type="password"
-              placeholder="Leave empty for no password"
+              placeholder={mode === "edit" && initialHasPassword ? "Leave empty to keep current password" : "Leave empty for no password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
+            {mode === "edit" && initialHasPassword && !password && (
+              <p className="text-xs text-muted-foreground mt-1">Current password will be kept</p>
+            )}
           </div>
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { hashPassword } from "@/lib/crypto";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import type { Note } from "@/lib/notes";
 import NoteEditor from "@/components/NoteEditor";
+import type { NoteEditOptions } from "@/components/NoteEditor";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) => (
@@ -57,10 +59,25 @@ const Dashboard = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+    mutationFn: async ({ id, opts }: { id: string; opts: NoteEditOptions }) => {
+      const updateData: Record<string, unknown> = {
+        content: opts.content,
+        size_bytes: opts.content.length,
+      };
+      if (opts.password) {
+        updateData.password_hash = await hashPassword(opts.password);
+      }
+      if (opts.slug !== undefined) {
+        updateData.slug = opts.slug || null;
+      }
+      if (opts.expiresIn !== undefined) {
+        updateData.expires_at = opts.expiresIn
+          ? new Date(Date.now() + opts.expiresIn * 60 * 1000).toISOString()
+          : null;
+      }
       const { error } = await supabase
         .from("notes")
-        .update({ content, size_bytes: content.length })
+        .update(updateData)
         .eq("id", id);
       if (error) throw error;
     },
@@ -119,9 +136,12 @@ const Dashboard = () => {
           <NoteEditor
             initialContent={editingNote.content}
             initialFormat={editingNote.format}
+            initialSlug={editingNote.slug || ""}
+            initialHasPassword={!!editingNote.password_hash}
+            initialExpiresAt={editingNote.expires_at}
             mode="edit"
             saving={updateMutation.isPending}
-            onSave={(content) => updateMutation.mutate({ id: editingId, content })}
+            onSave={(opts) => updateMutation.mutate({ id: editingId, opts })}
             onCancel={() => { setEditingId(null); setEditingNote(null); }}
           />
         </div>
