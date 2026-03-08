@@ -56,6 +56,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              <Route path="/file/:idOrSlug" element={<FileView />} />
               <Route path="/:idOrSlug" element={<NoteView />} />
             </Routes>
           </BrowserRouter>
