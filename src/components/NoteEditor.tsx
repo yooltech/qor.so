@@ -161,11 +161,14 @@ const NoteEditor = ({
             </label>
             <input
               type="password"
-              placeholder="Leave empty for no password"
+              placeholder={mode === "edit" && initialHasPassword ? "Leave empty to keep current password" : "Leave empty for no password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
+            {mode === "edit" && initialHasPassword && !password && (
+              <p className="text-xs text-muted-foreground mt-1">Current password will be kept</p>
+            )}
           </div>
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
