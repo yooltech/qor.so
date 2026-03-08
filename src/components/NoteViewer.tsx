@@ -73,6 +73,12 @@ const NoteViewer = ({ note }: NoteViewerProps) => {
               🔒 Protected
             </span>
           )}
+          {note.is_encrypted && (
+            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Encrypted
+            </span>
+          )}
           {note.expires_at && (
             <span className="px-2 py-1 rounded-md bg-accent text-accent-foreground text-xs font-medium">
               ⏱ Expires {new Date(note.expires_at).toLocaleString()}
