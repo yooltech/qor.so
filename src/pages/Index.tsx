@@ -1,12 +1,15 @@
+import { useState } from "react";
 import NoteEditor from "@/components/NoteEditor";
+import FileUploader from "@/components/FileUploader";
 import PlatformStats from "@/components/PlatformStats";
-import { FileText, LayoutDashboard, LogIn, ShieldCheck } from "lucide-react";
+import { FileText, LayoutDashboard, LogIn, Upload, ShieldCheck, Braces } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const Index = () => {
   const { user } = useAuth();
+  const [mode, setMode] = useState<"note" | "file">("note");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -49,7 +52,7 @@ const Index = () => {
           <span className="text-primary">Instantly.</span>
         </h1>
         <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-          Paste text or JSON, get a shareable link. No signup required.
+          Paste text, JSON, or upload files — get a shareable link. No signup required.
         </p>
         {user ? (
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
@@ -63,9 +66,37 @@ const Index = () => {
         )}
       </div>
 
-      {/* Editor */}
+      {/* Mode toggle */}
+      <div className="max-w-4xl mx-auto px-6 mb-6">
+        <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 w-fit mx-auto">
+          <button
+            onClick={() => setMode("note")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              mode === "note"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Braces className="w-4 h-4" />
+            Note
+          </button>
+          <button
+            onClick={() => setMode("file")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              mode === "file"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            File
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
       <div className="px-6 pb-20 flex-1">
-        <NoteEditor />
+        {mode === "note" ? <NoteEditor /> : <FileUploader />}
       </div>
 
       {/* Footer Stats */}

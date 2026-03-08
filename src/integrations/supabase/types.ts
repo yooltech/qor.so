@@ -86,6 +86,51 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_files: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          password_hash: string | null
+          slug: string | null
+          storage_path: string
+          updated_at: string
+          user_id: string | null
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          file_name: string
+          file_size?: number
+          id?: string
+          mime_type: string
+          password_hash?: string | null
+          slug?: string | null
+          storage_path: string
+          updated_at?: string
+          user_id?: string | null
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          password_hash?: string | null
+          slug?: string | null
+          storage_path?: string
+          updated_at?: string
+          user_id?: string | null
+          view_count?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -173,6 +218,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_file_view: { Args: { file_id: string }; Returns: undefined }
       increment_note_view: { Args: { note_id: string }; Returns: undefined }
       list_user_notes_decrypted: {
         Args: never
