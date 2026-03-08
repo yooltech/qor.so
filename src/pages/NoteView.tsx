@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getNote } from "@/lib/notes";
 import { verifyPassword } from "@/lib/crypto";
+import { supabase } from "@/integrations/supabase/client";
 import NoteViewer from "@/components/NoteViewer";
 import { FileText, Loader2, Lock, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -12,12 +13,22 @@ const NoteView = () => {
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [viewTracked, setViewTracked] = useState(false);
 
   const { data: note, isLoading, error } = useQuery({
     queryKey: ["note", id],
     queryFn: () => getNote(id!),
     enabled: !!id,
   });
+
+  // Track view once when note loads successfully
+  useEffect(() => {
+    if (note && !viewTracked && id) {
+      supabase.rpc("increment_note_view", { note_id: id }).then(() => {
+        setViewTracked(true);
+      });
+    }
+  }, [note, viewTracked, id]);
 
   const isPasswordProtected = note?.password_hash && !unlocked;
   const isExpired = note?.expires_at && new Date(note.expires_at) <= new Date();

@@ -6,8 +6,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   FileText, Search, Trash2, ExternalLink, Edit3, Loader2, LogOut, Plus, Save, X,
+  Eye, BarChart3, HardDrive, TrendingUp,
 } from "lucide-react";
 import type { Note } from "@/lib/notes";
+
+const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) => (
+  <div className="rounded-xl border bg-card p-4">
+    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+      <Icon className="w-4 h-4" />
+      <span className="text-xs font-medium">{label}</span>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -26,7 +37,7 @@ const Dashboard = () => {
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Note[];
+      return data as (Note & { view_count: number })[];
     },
     enabled: !!user,
   });
@@ -75,6 +86,15 @@ const Dashboard = () => {
       (n.title && n.title.toLowerCase().includes(search.toLowerCase()))
   );
 
+  // Compute user stats
+  const totalViews = notes.reduce((sum, n) => sum + (n.view_count || 0), 0);
+  const totalBytes = notes.reduce((sum, n) => sum + n.size_bytes, 0);
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1048576).toFixed(1)} MB`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <nav className="border-b">
@@ -109,6 +129,18 @@ const Dashboard = () => {
         <p className="mt-1 text-muted-foreground text-sm">
           {notes.length} note{notes.length !== 1 ? "s" : ""} saved
         </p>
+
+        {/* Stats cards */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard icon={FileText} label="Total Notes" value={notes.length.toString()} />
+          <StatCard icon={Eye} label="Total Views" value={totalViews.toLocaleString()} />
+          <StatCard icon={HardDrive} label="Storage Used" value={formatBytes(totalBytes)} />
+          <StatCard
+            icon={TrendingUp}
+            label="Most Viewed"
+            value={notes.length > 0 ? Math.max(...notes.map(n => n.view_count || 0)).toLocaleString() : "0"}
+          />
+        </div>
 
         {/* Search */}
         <div className="mt-6 relative">
@@ -172,52 +204,54 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ) : (
-                  <>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2 py-0.5 rounded bg-accent text-accent-foreground text-xs font-semibold uppercase">
-                            {note.format}
-                          </span>
-                          <span className="text-xs text-muted-foreground font-mono">
-                            {note.size_bytes.toLocaleString()} bytes
-                          </span>
-                        </div>
-                        <pre className="font-mono text-sm text-foreground truncate max-w-full">
-                          {note.content.slice(0, 120)}
-                          {note.content.length > 120 ? "..." : ""}
-                        </pre>
-                        <p className="text-xs text-muted-foreground mt-1 font-mono">
-                          {new Date(note.created_at).toLocaleString()}
-                        </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="px-2 py-0.5 rounded bg-accent text-accent-foreground text-xs font-semibold uppercase">
+                          {note.format}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {note.size_bytes.toLocaleString()} bytes
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+                          <Eye className="w-3 h-3" />
+                          {(note.view_count || 0).toLocaleString()}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Link
-                          to={`/note/${note.id}`}
-                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                          title="View"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => startEdit(note)}
-                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                          title="Edit"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm("Delete this note?")) deleteMutation.mutate(note.id);
-                          }}
-                          className="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <pre className="font-mono text-sm text-foreground truncate max-w-full">
+                        {note.content.slice(0, 120)}
+                        {note.content.length > 120 ? "..." : ""}
+                      </pre>
+                      <p className="text-xs text-muted-foreground mt-1 font-mono">
+                        {new Date(note.created_at).toLocaleString()}
+                      </p>
                     </div>
-                  </>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Link
+                        to={`/note/${note.id}`}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        title="View"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => startEdit(note)}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        title="Edit"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this note?")) deleteMutation.mutate(note.id);
+                        }}
+                        className="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}

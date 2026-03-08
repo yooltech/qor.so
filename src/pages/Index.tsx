@@ -1,5 +1,5 @@
 import NoteEditor from "@/components/NoteEditor";
-import { FileText, LayoutDashboard, LogIn } from "lucide-react";
+import { FileText, LayoutDashboard, LogIn, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
