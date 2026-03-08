@@ -1,8 +1,11 @@
 import NoteEditor from "@/components/NoteEditor";
-import { FileText } from "lucide-react";
+import { FileText, LayoutDashboard, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -14,9 +17,25 @@ const Index = () => {
             </div>
             <span className="font-bold text-lg text-foreground">NoteShare</span>
           </Link>
-          <span className="text-xs text-muted-foreground font-mono hidden sm:block">
-            save · share · instantly
-          </span>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
 
