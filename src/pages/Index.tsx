@@ -1,5 +1,6 @@
 import NoteEditor from "@/components/NoteEditor";
-import { FileText, LayoutDashboard, LogIn, BarChart3 } from "lucide-react";
+import PlatformStats from "@/components/PlatformStats";
+import { FileText, LayoutDashboard, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -8,7 +9,7 @@ const Index = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Nav */}
       <nav className="border-b">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -20,13 +21,6 @@ const Index = () => {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link
-              to="/analytics"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Stats</span>
-            </Link>
             {user ? (
               <Link
                 to="/dashboard"
@@ -60,9 +54,12 @@ const Index = () => {
       </div>
 
       {/* Editor */}
-      <div className="px-6 pb-20">
+      <div className="px-6 pb-20 flex-1">
         <NoteEditor />
       </div>
+
+      {/* Footer Stats */}
+      <PlatformStats />
     </div>
   );
 };
