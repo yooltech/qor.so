@@ -1,0 +1,153 @@
+import { useState } from "react";
+import { Note } from "@/lib/notes";
+import { Copy, Link, Download, Check, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { deleteNote } from "@/lib/notes";
+import { useNavigate } from "react-router-dom";
+import JsonHighlighter from "./JsonHighlighter";
+
+interface NoteViewerProps {
+  note: Note;
+}
+
+const NoteViewer = ({ note }: NoteViewerProps) => {
+  const [copied, setCopied] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  const copyContent = async () => {
+    await navigator.clipboard.writeText(note.content);
+    setCopied("content");
+    toast.success("Content copied!");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopied("link");
+    toast.success("Link copied!");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const downloadNote = () => {
+    const ext = note.format === "json" ? "json" : "txt";
+    const blob = new Blob([note.content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `note-${note.id}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Downloaded!");
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this note permanently?")) return;
+    setDeleting(true);
+    try {
+      await deleteNote(note.id);
+      toast.success("Note deleted");
+      navigate("/");
+    } catch {
+      toast.error("Failed to delete note");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const lineCount = note.content.split("\n").length;
+
+  return (
+    <div className="w-full max-w-4xl mx-auto animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="px-2.5 py-1 rounded-md bg-accent text-accent-foreground text-xs font-semibold uppercase tracking-wider">
+            {note.format}
+          </span>
+          <span className="text-xs text-muted-foreground font-mono">
+            {note.size_bytes.toLocaleString()} bytes · {lineCount} lines
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <ActionButton
+            onClick={copyContent}
+            icon={copied === "content" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            label="Copy"
+          />
+          <ActionButton
+            onClick={copyLink}
+            icon={copied === "link" ? <Check className="w-4 h-4" /> : <Link className="w-4 h-4" />}
+            label="Link"
+          />
+          <ActionButton onClick={downloadNote} icon={<Download className="w-4 h-4" />} label="Download" />
+          <ActionButton
+            onClick={handleDelete}
+            icon={<Trash2 className="w-4 h-4" />}
+            label="Delete"
+            variant="destructive"
+            disabled={deleting}
+          />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="rounded-xl border bg-editor overflow-hidden shadow-sm">
+        <div className="flex">
+          <div className="select-none py-4 pr-2 pl-4 text-right border-r bg-editor-line min-w-[3.5rem]">
+            {Array.from({ length: lineCount }, (_, i) => (
+              <div key={i} className="text-xs leading-6 text-editor-gutter font-mono">
+                {i + 1}
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 p-4 overflow-x-auto">
+            {note.format === "json" ? (
+              <JsonHighlighter content={note.content} />
+            ) : (
+              <pre className="font-mono text-sm leading-6 text-foreground whitespace-pre-wrap break-words">
+                {note.content}
+              </pre>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-4 text-xs text-muted-foreground text-center font-mono">
+        Created {new Date(note.created_at).toLocaleString()}
+      </p>
+    </div>
+  );
+};
+
+function ActionButton({
+  onClick,
+  icon,
+  label,
+  variant,
+  disabled,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  variant?: "destructive";
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+        variant === "destructive"
+          ? "text-destructive hover:bg-destructive/10"
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+      } disabled:opacity-50`}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  );
+}
+
+export default NoteViewer;
