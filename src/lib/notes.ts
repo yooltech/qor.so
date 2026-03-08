@@ -8,6 +8,7 @@ export interface Note {
   size_bytes: number;
   created_at: string;
   updated_at: string;
+  user_id: string | null;
 }
 
 const MAX_SIZE = 1048576; // 1MB
@@ -27,9 +28,12 @@ export async function createNote(content: string, format: "text" | "json", title
     }
   }
 
+  // Get current user if logged in
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data, error } = await supabase
     .from("notes")
-    .insert({ content, format, title: title || null })
+    .insert({ content, format, title: title || null, user_id: user?.id || null })
     .select()
     .single();
 
