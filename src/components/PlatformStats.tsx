@@ -62,6 +62,29 @@ const PlatformStats = () => {
           <StatItem icon={TrendingUp} label="Today" value={stats.notes_today.toLocaleString()} />
         </div>
       </div>
+
+      {/* Brand footer */}
+      <div className="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+        <a
+          href="https://yooltech.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-foreground hover:text-primary transition-colors"
+        >
+          Yooltech
+        </a>
+        <span>
+          Made with ❤️ in{" "}
+          <a
+            href="https://hamar.so"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground hover:text-primary transition-colors font-medium"
+          >
+            Hamar
+          </a>
+        </span>
+      </div>
     </div>
   );
 };
