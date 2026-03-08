@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createNote } from "@/lib/notes";
 import { toast } from "sonner";
-import { FileText, Braces, Save, Loader2, Lock, Clock } from "lucide-react";
+import { FileText, Braces, Save, Loader2, Lock, Clock, Link2 } from "lucide-react";
 
 const EXPIRY_OPTIONS = [
   { label: "Never", value: null },
@@ -13,22 +13,46 @@ const EXPIRY_OPTIONS = [
   { label: "30 days", value: 43200 },
 ];
 
-const NoteEditor = () => {
-  const [content, setContent] = useState("");
-  const [format, setFormat] = useState<"text" | "json">("text");
+interface NoteEditorProps {
+  initialContent?: string;
+  initialFormat?: "text" | "json";
+  mode?: "create" | "edit";
+  onSave?: (content: string, format: "text" | "json") => void;
+  onCancel?: () => void;
+  saving?: boolean;
+}
+
+const NoteEditor = ({
+  initialContent = "",
+  initialFormat = "text",
+  mode = "create",
+  onSave,
+  onCancel,
+  saving: externalSaving,
+}: NoteEditorProps) => {
+  const [content, setContent] = useState(initialContent);
+  const [format, setFormat] = useState<"text" | "json">(initialFormat);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState("");
+  const [slug, setSlug] = useState("");
   const [showProtection, setShowProtection] = useState(false);
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const lineCount = content.split("\n").length;
+  const isSaving = externalSaving || saving;
 
   const handleSave = async () => {
     if (!content.trim()) {
       toast.error("Please enter some content");
       return;
     }
+
+    if (mode === "edit" && onSave) {
+      onSave(content, format);
+      return;
+    }
+
     setSaving(true);
     try {
       const note = await createNote({
@@ -36,9 +60,10 @@ const NoteEditor = () => {
         format,
         password: password || undefined,
         expiresIn,
+        slug: slug || undefined,
       });
       toast.success("Note saved!");
-      navigate(`/note/${note.id}`);
+      navigate(`/${note.slug || note.id}`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to save note");
     } finally {
@@ -76,26 +101,47 @@ const NoteEditor = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowProtection(!showProtection)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-              showProtection || password || expiresIn
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Lock className="w-3.5 h-3.5" />
-            Protection
-          </button>
+          {mode === "create" && (
+            <button
+              onClick={() => setShowProtection(!showProtection)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                showProtection || password || expiresIn || slug
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Lock className="w-3.5 h-3.5" />
+              Options
+            </button>
+          )}
           <span className="text-xs text-muted-foreground font-mono">
             {content.length.toLocaleString()} chars · {lineCount} lines
           </span>
         </div>
       </div>
 
-      {/* Protection options */}
-      {showProtection && (
+      {/* Protection / slug options */}
+      {showProtection && mode === "create" && (
         <div className="mb-4 rounded-xl border bg-card p-4 space-y-4 animate-fade-in">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+              <Link2 className="w-3.5 h-3.5" />
+              Custom URL Slug
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground font-mono">/</span>
+              <input
+                type="text"
+                placeholder="my-note"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                className="flex-1 px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Leave empty for an auto-generated ID
+            </p>
+          </div>
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
               <Lock className="w-3.5 h-3.5" />
@@ -157,9 +203,14 @@ const NoteEditor = () => {
         </div>
       </div>
 
-      {/* Save button */}
+      {/* Action buttons */}
       <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+          {slug && (
+            <span className="flex items-center gap-1 px-2 py-1 rounded bg-accent text-accent-foreground">
+              <Link2 className="w-3 h-3" /> /{slug}
+            </span>
+          )}
           {password && (
             <span className="flex items-center gap-1 px-2 py-1 rounded bg-accent text-accent-foreground">
               <Lock className="w-3 h-3" /> Password set
@@ -172,18 +223,28 @@ const NoteEditor = () => {
             </span>
           )}
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !content.trim()}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed animate-pulse-glow"
-        >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
+        <div className="flex items-center gap-2">
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+            >
+              Cancel
+            </button>
           )}
-          Save Note
-        </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !content.trim()}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed animate-pulse-glow"
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {mode === "edit" ? "Update Note" : "Save Note"}
+          </button>
+        </div>
       </div>
     </div>
   );
