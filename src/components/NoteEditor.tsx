@@ -13,11 +13,22 @@ const EXPIRY_OPTIONS = [
   { label: "30 days", value: 43200 },
 ];
 
+export interface NoteEditOptions {
+  content: string;
+  format: "text" | "json";
+  password?: string;
+  slug?: string;
+  expiresIn?: number | null;
+}
+
 interface NoteEditorProps {
   initialContent?: string;
   initialFormat?: "text" | "json";
+  initialSlug?: string;
+  initialHasPassword?: boolean;
+  initialExpiresAt?: string | null;
   mode?: "create" | "edit";
-  onSave?: (content: string, format: "text" | "json") => void;
+  onSave?: (opts: NoteEditOptions) => void;
   onCancel?: () => void;
   saving?: boolean;
 }
