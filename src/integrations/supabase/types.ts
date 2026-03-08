@@ -18,8 +18,10 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          expires_at: string | null
           format: string
           id: string
+          password_hash: string | null
           size_bytes: number
           title: string | null
           updated_at: string
@@ -28,8 +30,10 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          expires_at?: string | null
           format?: string
           id?: string
+          password_hash?: string | null
           size_bytes?: number
           title?: string | null
           updated_at?: string
@@ -38,8 +42,10 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          expires_at?: string | null
           format?: string
           id?: string
+          password_hash?: string | null
           size_bytes?: number
           title?: string | null
           updated_at?: string
