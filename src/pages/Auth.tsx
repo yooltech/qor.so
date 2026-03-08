@@ -102,7 +102,18 @@ const Auth = () => {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        {!isSignUp && (
+          <p className="mt-4 text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Forgot your password?
+            </Link>
+          </p>
+        )}
+
+        <p className="mt-4 text-center text-sm text-muted-foreground">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             onClick={() => setIsSignUp(!isSignUp)}
