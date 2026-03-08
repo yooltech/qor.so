@@ -136,9 +136,12 @@ const Dashboard = () => {
           <NoteEditor
             initialContent={editingNote.content}
             initialFormat={editingNote.format}
+            initialSlug={editingNote.slug || ""}
+            initialHasPassword={!!editingNote.password_hash}
+            initialExpiresAt={editingNote.expires_at}
             mode="edit"
             saving={updateMutation.isPending}
-            onSave={(content) => updateMutation.mutate({ id: editingId, content })}
+            onSave={(opts) => updateMutation.mutate({ id: editingId, opts })}
             onCancel={() => { setEditingId(null); setEditingNote(null); }}
           />
         </div>
