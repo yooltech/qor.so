@@ -101,19 +101,17 @@ const NoteEditor = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {mode === "create" && (
-            <button
-              onClick={() => setShowProtection(!showProtection)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                showProtection || password || expiresIn || slug
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Lock className="w-3.5 h-3.5" />
-              Options
-            </button>
-          )}
+          <button
+            onClick={() => setShowProtection(!showProtection)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              showProtection || password || expiresIn || slug
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Lock className="w-3.5 h-3.5" />
+            Options
+          </button>
           <span className="text-xs text-muted-foreground font-mono">
             {content.length.toLocaleString()} chars · {lineCount} lines
           </span>
@@ -121,7 +119,7 @@ const NoteEditor = ({
       </div>
 
       {/* Protection / slug options */}
-      {showProtection && mode === "create" && (
+      {showProtection && (
         <div className="mb-4 rounded-xl border bg-card p-4 space-y-4 animate-fade-in">
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
