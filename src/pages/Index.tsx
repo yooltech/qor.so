@@ -17,7 +17,14 @@ const Index = () => {
             </div>
             <span className="font-bold text-lg text-foreground">NoteShare</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link
+              to="/analytics"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Stats</span>
+            </Link>
             {user ? (
               <Link
                 to="/dashboard"
