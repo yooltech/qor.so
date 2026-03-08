@@ -36,6 +36,9 @@ interface NoteEditorProps {
 const NoteEditor = ({
   initialContent = "",
   initialFormat = "text",
+  initialSlug = "",
+  initialHasPassword = false,
+  initialExpiresAt,
   mode = "create",
   onSave,
   onCancel,
@@ -45,7 +48,7 @@ const NoteEditor = ({
   const [format, setFormat] = useState<"text" | "json">(initialFormat);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState("");
-  const [slug, setSlug] = useState("");
+  const [slug, setSlug] = useState(initialSlug);
   const [showProtection, setShowProtection] = useState(false);
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const navigate = useNavigate();
