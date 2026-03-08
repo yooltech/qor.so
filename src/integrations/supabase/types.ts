@@ -23,6 +23,7 @@ export type Database = {
           size_bytes: number
           title: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           content: string
@@ -32,6 +33,7 @@ export type Database = {
           size_bytes?: number
           title?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           content?: string
@@ -40,6 +42,31 @@ export type Database = {
           id?: string
           size_bytes?: number
           title?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
           updated_at?: string
         }
         Relationships: []
