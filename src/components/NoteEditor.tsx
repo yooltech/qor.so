@@ -63,7 +63,7 @@ const NoteEditor = ({
     }
 
     if (mode === "edit" && onSave) {
-      onSave(content, format);
+      onSave({ content, format, password: password || undefined, slug: slug || undefined, expiresIn });
       return;
     }
 
