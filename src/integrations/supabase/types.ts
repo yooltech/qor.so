@@ -26,6 +26,7 @@ export type Database = {
           title: string | null
           updated_at: string
           user_id: string | null
+          view_count: number
         }
         Insert: {
           content: string
@@ -38,6 +39,7 @@ export type Database = {
           title?: string | null
           updated_at?: string
           user_id?: string | null
+          view_count?: number
         }
         Update: {
           content?: string
@@ -50,6 +52,7 @@ export type Database = {
           title?: string | null
           updated_at?: string
           user_id?: string | null
+          view_count?: number
         }
         Relationships: []
       }
@@ -79,10 +82,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_stats: {
+        Row: {
+          notes_today: number | null
+          total_bytes: number | null
+          total_notes: number | null
+          total_views: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      increment_note_view: { Args: { note_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
