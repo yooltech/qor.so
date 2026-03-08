@@ -1,6 +1,6 @@
 import NoteEditor from "@/components/NoteEditor";
 import PlatformStats from "@/components/PlatformStats";
-import { FileText, LayoutDashboard, LogIn } from "lucide-react";
+import { FileText, LayoutDashboard, LogIn, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -51,6 +51,16 @@ const Index = () => {
         <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
           Paste text or JSON, get a shareable link. No signup required.
         </p>
+        {user ? (
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <ShieldCheck className="w-4 h-4" />
+            Your notes are encrypted at rest
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-muted-foreground">
+            <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to encrypt your notes automatically
+          </p>
+        )}
       </div>
 
       {/* Editor */}
