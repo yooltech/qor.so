@@ -21,6 +21,7 @@ export type Database = {
           expires_at: string | null
           format: string
           id: string
+          is_encrypted: boolean
           password_hash: string | null
           size_bytes: number
           slug: string | null
@@ -35,6 +36,7 @@ export type Database = {
           expires_at?: string | null
           format?: string
           id?: string
+          is_encrypted?: boolean
           password_hash?: string | null
           size_bytes?: number
           slug?: string | null
@@ -49,6 +51,7 @@ export type Database = {
           expires_at?: string | null
           format?: string
           id?: string
+          is_encrypted?: boolean
           password_hash?: string | null
           size_bytes?: number
           slug?: string | null
@@ -114,6 +117,55 @@ export type Database = {
       }
     }
     Functions: {
+      create_encrypted_note: {
+        Args: {
+          p_content: string
+          p_expires_at?: string
+          p_format?: string
+          p_password_hash?: string
+          p_slug?: string
+          p_title?: string
+        }
+        Returns: {
+          content: string
+          created_at: string
+          expires_at: string | null
+          format: string
+          id: string
+          is_encrypted: boolean
+          password_hash: string | null
+          size_bytes: number
+          slug: string | null
+          title: string | null
+          updated_at: string
+          user_id: string | null
+          view_count: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      decrypt_note_content: {
+        Args: { p_note_id: string }
+        Returns: {
+          content: string
+          created_at: string
+          expires_at: string
+          format: string
+          id: string
+          is_encrypted: boolean
+          password_hash: string
+          size_bytes: number
+          slug: string
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -122,6 +174,34 @@ export type Database = {
         Returns: boolean
       }
       increment_note_view: { Args: { note_id: string }; Returns: undefined }
+      list_user_notes_decrypted: {
+        Args: never
+        Returns: {
+          content: string
+          created_at: string
+          expires_at: string
+          format: string
+          id: string
+          is_encrypted: boolean
+          password_hash: string
+          size_bytes: number
+          slug: string
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }[]
+      }
+      update_encrypted_note: {
+        Args: {
+          p_content: string
+          p_expires_at?: string
+          p_note_id: string
+          p_password_hash?: string
+          p_slug?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
