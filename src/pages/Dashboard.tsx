@@ -59,10 +59,25 @@ const Dashboard = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+    mutationFn: async ({ id, opts }: { id: string; opts: NoteEditOptions }) => {
+      const updateData: Record<string, unknown> = {
+        content: opts.content,
+        size_bytes: opts.content.length,
+      };
+      if (opts.password) {
+        updateData.password_hash = await hashPassword(opts.password);
+      }
+      if (opts.slug !== undefined) {
+        updateData.slug = opts.slug || null;
+      }
+      if (opts.expiresIn !== undefined) {
+        updateData.expires_at = opts.expiresIn
+          ? new Date(Date.now() + opts.expiresIn * 60 * 1000).toISOString()
+          : null;
+      }
       const { error } = await supabase
         .from("notes")
-        .update({ content, size_bytes: content.length })
+        .update(updateData)
         .eq("id", id);
       if (error) throw error;
     },
