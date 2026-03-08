@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   FileText, Search, Trash2, ExternalLink, Edit3, Loader2, LogOut, Plus,
-  Eye, HardDrive, TrendingUp,
+  Eye, HardDrive, TrendingUp, User,
 } from "lucide-react";
 import type { Note } from "@/lib/notes";
 import NoteEditor from "@/components/NoteEditor";
