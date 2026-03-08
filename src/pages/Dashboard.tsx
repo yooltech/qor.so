@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { Note } from "@/lib/notes";
 import NoteEditor from "@/components/NoteEditor";
+import type { NoteEditOptions } from "@/components/NoteEditor";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const StatCard = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) => (
