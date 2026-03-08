@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   FileText, Search, Trash2, ExternalLink, Edit3, Loader2, LogOut, Plus,
-  Eye, HardDrive, TrendingUp, User,
+  Eye, HardDrive, TrendingUp, User, ShieldCheck,
 } from "lucide-react";
 import type { Note } from "@/lib/notes";
 import NoteEditor from "@/components/NoteEditor";
@@ -35,13 +35,10 @@ const Dashboard = () => {
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ["my-notes", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("notes")
-        .select("*")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
+      // Use decrypted list RPC for logged-in users
+      const { data, error } = await supabase.rpc('list_user_notes_decrypted' as any);
       if (error) throw error;
-      return data as Note[];
+      return (data || []) as Note[];
     },
     enabled: !!user,
   });
@@ -59,27 +56,38 @@ const Dashboard = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, opts }: { id: string; opts: NoteEditOptions }) => {
-      const updateData: Record<string, unknown> = {
-        content: opts.content,
-        size_bytes: opts.content.length,
-      };
-      if (opts.password) {
-        updateData.password_hash = await hashPassword(opts.password);
+    mutationFn: async ({ id, opts, note }: { id: string; opts: NoteEditOptions; note: Note }) => {
+      const password_hash = opts.password ? await hashPassword(opts.password) : null;
+      const expires_at = opts.expiresIn !== undefined && opts.expiresIn !== null
+        ? new Date(Date.now() + opts.expiresIn * 60 * 1000).toISOString()
+        : (opts.expiresIn === null ? null : note.expires_at);
+
+      if (note.is_encrypted) {
+        // Use encrypted update RPC
+        const { error } = await supabase.rpc('update_encrypted_note' as any, {
+          p_note_id: id,
+          p_content: opts.content,
+          p_password_hash: password_hash,
+          p_slug: opts.slug || null,
+          p_expires_at: expires_at,
+        });
+        if (error) throw error;
+      } else {
+        // Direct update for unencrypted notes
+        const updateData: Record<string, unknown> = {
+          content: opts.content,
+          size_bytes: opts.content.length,
+        };
+        if (password_hash) updateData.password_hash = password_hash;
+        if (opts.slug !== undefined) updateData.slug = opts.slug || null;
+        if (opts.expiresIn !== undefined) {
+          updateData.expires_at = opts.expiresIn
+            ? new Date(Date.now() + opts.expiresIn * 60 * 1000).toISOString()
+            : null;
+        }
+        const { error } = await supabase.from("notes").update(updateData).eq("id", id);
+        if (error) throw error;
       }
-      if (opts.slug !== undefined) {
-        updateData.slug = opts.slug || null;
-      }
-      if (opts.expiresIn !== undefined) {
-        updateData.expires_at = opts.expiresIn
-          ? new Date(Date.now() + opts.expiresIn * 60 * 1000).toISOString()
-          : null;
-      }
-      const { error } = await supabase
-        .from("notes")
-        .update(updateData)
-        .eq("id", id);
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-notes"] });
@@ -141,7 +149,7 @@ const Dashboard = () => {
             initialExpiresAt={editingNote.expires_at}
             mode="edit"
             saving={updateMutation.isPending}
-            onSave={(opts) => updateMutation.mutate({ id: editingId, opts })}
+            onSave={(opts) => updateMutation.mutate({ id: editingId, opts, note: editingNote })}
             onCancel={() => { setEditingId(null); setEditingNote(null); }}
           />
         </div>
@@ -258,6 +266,12 @@ const Dashboard = () => {
                       {note.slug && (
                         <span className="text-xs text-primary font-mono">
                           /{note.slug}
+                        </span>
+                      )}
+                      {note.is_encrypted && (
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
+                          <ShieldCheck className="w-3 h-3" />
+                          Encrypted
                         </span>
                       )}
                     </div>
