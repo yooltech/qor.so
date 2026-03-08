@@ -23,6 +23,7 @@ export type Database = {
           id: string
           password_hash: string | null
           size_bytes: number
+          slug: string | null
           title: string | null
           updated_at: string
           user_id: string | null
@@ -36,6 +37,7 @@ export type Database = {
           id?: string
           password_hash?: string | null
           size_bytes?: number
+          slug?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string | null
@@ -49,6 +51,7 @@ export type Database = {
           id?: string
           password_hash?: string | null
           size_bytes?: number
+          slug?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string | null

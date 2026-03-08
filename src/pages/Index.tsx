@@ -2,6 +2,7 @@ import NoteEditor from "@/components/NoteEditor";
 import { FileText, LayoutDashboard, LogIn, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Index = () => {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ const Index = () => {
             <span className="font-bold text-lg text-foreground">NoteShare</span>
           </Link>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link
               to="/analytics"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"

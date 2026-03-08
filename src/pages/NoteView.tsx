@@ -5,30 +5,30 @@ import { getNote } from "@/lib/notes";
 import { verifyPassword } from "@/lib/crypto";
 import { supabase } from "@/integrations/supabase/client";
 import NoteViewer from "@/components/NoteViewer";
+import ThemeToggle from "@/components/ThemeToggle";
 import { FileText, Loader2, Lock, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 const NoteView = () => {
-  const { id } = useParams<{ id: string }>();
+  const { idOrSlug } = useParams<{ idOrSlug: string }>();
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
 
   const { data: note, isLoading, error } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => getNote(id!),
-    enabled: !!id,
+    queryKey: ["note", idOrSlug],
+    queryFn: () => getNote(idOrSlug!),
+    enabled: !!idOrSlug,
   });
 
-  // Track view once when note loads successfully
   useEffect(() => {
-    if (note && !viewTracked && id) {
-      supabase.rpc("increment_note_view", { note_id: id }).then(() => {
+    if (note && !viewTracked) {
+      supabase.rpc("increment_note_view", { note_id: note.id }).then(() => {
         setViewTracked(true);
       });
     }
-  }, [note, viewTracked, id]);
+  }, [note, viewTracked]);
 
   const isPasswordProtected = note?.password_hash && !unlocked;
   const isExpired = note?.expires_at && new Date(note.expires_at) <= new Date();
@@ -56,12 +56,15 @@ const NoteView = () => {
             </div>
             <span className="font-bold text-lg text-foreground">NoteShare</span>
           </Link>
-          <Link
-            to="/"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            + New Note
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              to="/"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              + New Note
+            </Link>
+          </div>
         </div>
       </nav>
 
