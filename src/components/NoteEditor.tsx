@@ -119,7 +119,7 @@ const NoteEditor = ({
       </div>
 
       {/* Protection / slug options */}
-      {showProtection && mode === "create" && (
+      {showProtection && (
         <div className="mb-4 rounded-xl border bg-card p-4 space-y-4 animate-fade-in">
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
