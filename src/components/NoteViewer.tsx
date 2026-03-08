@@ -61,13 +61,23 @@ const NoteViewer = ({ note }: NoteViewerProps) => {
     <div className="w-full max-w-4xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className="px-2.5 py-1 rounded-md bg-accent text-accent-foreground text-xs font-semibold uppercase tracking-wider">
             {note.format}
           </span>
           <span className="text-xs text-muted-foreground font-mono">
             {note.size_bytes.toLocaleString()} bytes · {lineCount} lines
           </span>
+          {note.password_hash && (
+            <span className="px-2 py-1 rounded-md bg-accent text-accent-foreground text-xs font-medium">
+              🔒 Protected
+            </span>
+          )}
+          {note.expires_at && (
+            <span className="px-2 py-1 rounded-md bg-accent text-accent-foreground text-xs font-medium">
+              ⏱ Expires {new Date(note.expires_at).toLocaleString()}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

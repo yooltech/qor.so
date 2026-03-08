@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { hashPassword } from "./crypto";
 
 export interface Note {
   id: string;
@@ -9,11 +10,23 @@ export interface Note {
   created_at: string;
   updated_at: string;
   user_id: string | null;
+  password_hash: string | null;
+  expires_at: string | null;
 }
 
 const MAX_SIZE = 1048576; // 1MB
 
-export async function createNote(content: string, format: "text" | "json", title?: string): Promise<Note> {
+export interface CreateNoteOptions {
+  content: string;
+  format: "text" | "json";
+  title?: string;
+  password?: string;
+  expiresIn?: number | null; // minutes
+}
+
+export async function createNote(opts: CreateNoteOptions): Promise<Note> {
+  const { content, format, title, password, expiresIn } = opts;
+
   if (content.length > MAX_SIZE) {
     throw new Error("Note content exceeds maximum size of 1MB");
   }
@@ -28,12 +41,23 @@ export async function createNote(content: string, format: "text" | "json", title
     }
   }
 
-  // Get current user if logged in
   const { data: { user } } = await supabase.auth.getUser();
+
+  const password_hash = password ? await hashPassword(password) : null;
+  const expires_at = expiresIn
+    ? new Date(Date.now() + expiresIn * 60 * 1000).toISOString()
+    : null;
 
   const { data, error } = await supabase
     .from("notes")
-    .insert({ content, format, title: title || null, user_id: user?.id || null })
+    .insert({
+      content,
+      format,
+      title: title || null,
+      user_id: user?.id || null,
+      password_hash,
+      expires_at,
+    })
     .select()
     .single();
 
