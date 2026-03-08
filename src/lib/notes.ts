@@ -14,6 +14,7 @@ export interface Note {
   expires_at: string | null;
   view_count: number;
   slug: string | null;
+  is_encrypted: boolean;
 }
 
 const MAX_SIZE = 1048576; // 1MB
@@ -60,13 +61,35 @@ export async function createNote(opts: CreateNoteOptions): Promise<Note> {
     ? new Date(Date.now() + expiresIn * 60 * 1000).toISOString()
     : null;
 
+  if (user) {
+    // Logged-in: create encrypted note via RPC
+    const { data, error } = await supabase.rpc('create_encrypted_note' as any, {
+      p_content: content,
+      p_format: format,
+      p_title: title || null,
+      p_password_hash: password_hash,
+      p_expires_at: expires_at,
+      p_slug: slug || null,
+    });
+
+    if (error) {
+      if (error.message?.includes("duplicate") || error.code === "23505") {
+        throw new Error("This slug is already taken");
+      }
+      throw error;
+    }
+    const result = Array.isArray(data) ? data[0] : data;
+    return result as Note;
+  }
+
+  // Anonymous: unencrypted insert
   const { data, error } = await supabase
     .from("notes")
     .insert({
       content,
       format,
       title: title || null,
-      user_id: user?.id || null,
+      user_id: null,
       password_hash,
       expires_at,
       slug: slug || null,
@@ -84,23 +107,21 @@ export async function createNote(opts: CreateNoteOptions): Promise<Note> {
 }
 
 export async function getNote(idOrSlug: string): Promise<Note> {
-  // Try by slug first, then by id
+  // Try by slug first to get the ID
   const { data: slugData } = await supabase
     .from("notes")
-    .select("*")
+    .select("id")
     .eq("slug", idOrSlug)
     .maybeSingle();
 
-  if (slugData) return slugData as Note;
+  const noteId = slugData?.id || idOrSlug;
 
-  const { data, error } = await supabase
-    .from("notes")
-    .select("*")
-    .eq("id", idOrSlug)
-    .single();
-
+  // Use decrypt RPC which handles both encrypted and unencrypted
+  const { data, error } = await supabase.rpc('decrypt_note_content' as any, { p_note_id: noteId });
   if (error) throw error;
-  return data as Note;
+  const result = Array.isArray(data) ? data[0] : data;
+  if (!result) throw new Error('Note not found');
+  return result as Note;
 }
 
 export async function deleteNote(id: string): Promise<void> {
