@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   FileText, Search, Trash2, ExternalLink, Edit3, Loader2, LogOut, Plus,
-  Eye, HardDrive, TrendingUp,
+  Eye, HardDrive, TrendingUp, User,
 } from "lucide-react";
 import type { Note } from "@/lib/notes";
 import NoteEditor from "@/components/NoteEditor";
@@ -139,8 +139,15 @@ const Dashboard = () => {
             </div>
             <span className="font-bold text-lg text-foreground">NoteShare</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Link
+              to="/profile"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </Link>
             <Link
               to="/"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"

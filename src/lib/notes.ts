@@ -43,10 +43,13 @@ export async function createNote(opts: CreateNoteOptions): Promise<Note> {
       throw new Error("Invalid JSON content");
     }
   }
+  if (slug && slug.length < 3) {
+    throw new Error("Slug must be at least 3 characters");
+  }
   if (slug && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(slug)) {
     throw new Error("Slug can only contain lowercase letters, numbers, and hyphens");
   }
-  if (slug && ["auth", "dashboard", "analytics", "forgot-password", "reset-password"].includes(slug)) {
+  if (slug && ["auth", "dashboard", "analytics", "forgot-password", "reset-password", "admin", "profile"].includes(slug)) {
     throw new Error("This slug is reserved");
   }
 
