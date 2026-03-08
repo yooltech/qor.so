@@ -1,6 +1,6 @@
 import NoteEditor from "@/components/NoteEditor";
 import PlatformStats from "@/components/PlatformStats";
-import { FileText, LayoutDashboard, LogIn } from "lucide-react";
+import { FileText, LayoutDashboard, LogIn, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ThemeToggle from "@/components/ThemeToggle";
