@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { FileText, Loader2, Mail, Lock, User } from "lucide-react";
+import { FileText, Loader2, Mail, Lock, User, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -53,7 +54,14 @@ const Auth = () => {
           {isSignUp ? "Sign up to manage your notes" : "Sign in to your dashboard"}
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <Alert className="mt-8 border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 !text-destructive" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            Your data is <strong className="text-foreground">encrypted at rest</strong>. We have no support team or admin access to your account. If you lose your password, <strong className="text-destructive">your data cannot be recovered</strong>. Please keep your email and password safe.
+          </AlertDescription>
+        </Alert>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {isSignUp && (
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
