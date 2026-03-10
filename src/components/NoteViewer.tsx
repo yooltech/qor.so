@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Note } from "@/lib/notes";
-import { Copy, Link, Download, Check, Trash2, ShieldCheck } from "lucide-react";
+import { Copy, Link, Download, Check, Trash2, ShieldCheck, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
 import { deleteNote } from "@/lib/notes";
 import { useNavigate } from "react-router-dom";
