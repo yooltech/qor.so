@@ -54,7 +54,14 @@ const Auth = () => {
           {isSignUp ? "Sign up to manage your notes" : "Sign in to your dashboard"}
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <Alert className="mt-8 border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 !text-destructive" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            Your data is <strong className="text-foreground">encrypted at rest</strong>. We have no support team or admin access to your account. If you lose your password, <strong className="text-destructive">your data cannot be recovered</strong>. Please keep your email and password safe.
+          </AlertDescription>
+        </Alert>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {isSignUp && (
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
