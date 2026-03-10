@@ -108,12 +108,19 @@ const NoteViewer = ({ note }: NoteViewerProps) => {
         </div>
       </div>
 
+      {/* Title */}
+      {note.title && (
+        <div className="rounded-t-xl border border-b-0 bg-card px-6 pt-6 pb-2">
+          <h1 className="text-2xl font-bold text-foreground">{note.title}</h1>
+        </div>
+      )}
+
       {/* Content */}
-      <div className="rounded-xl border bg-editor overflow-hidden shadow-sm">
+      <div className={`border bg-card overflow-hidden shadow-sm ${note.title ? "rounded-b-xl" : "rounded-xl"}`}>
         <div className="flex">
-          <div className="select-none py-4 pr-2 pl-4 text-right border-r bg-editor-line min-w-[3.5rem]">
+          <div className="select-none py-4 pr-2 pl-4 text-right border-r bg-secondary/30 min-w-[3.5rem]">
             {Array.from({ length: lineCount }, (_, i) => (
-              <div key={i} className="text-xs leading-6 text-editor-gutter font-mono">
+              <div key={i} className="text-xs leading-7 text-muted-foreground font-mono">
                 {i + 1}
               </div>
             ))}
@@ -122,9 +129,33 @@ const NoteViewer = ({ note }: NoteViewerProps) => {
             {note.format === "json" ? (
               <JsonHighlighter content={note.content} />
             ) : (
-              <pre className="font-mono text-sm leading-6 text-foreground whitespace-pre-wrap break-words">
-                {note.content}
-              </pre>
+              <div className="text-sm leading-7 text-foreground whitespace-pre-wrap break-words">
+                {note.content.split("\n").map((line, i) => {
+                  // Subtitle
+                  if (line.startsWith("## ")) {
+                    return <div key={i} className="font-medium text-muted-foreground">{line.slice(3)}</div>;
+                  }
+                  // Checked checkbox
+                  if (/^- \[x\] /.test(line)) {
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <CheckSquare className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="line-through text-muted-foreground">{line.slice(6)}</span>
+                      </div>
+                    );
+                  }
+                  // Unchecked checkbox
+                  if (/^- \[ \] /.test(line)) {
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <Square className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <span>{line.slice(6)}</span>
+                      </div>
+                    );
+                  }
+                  return <div key={i}>{line || "\u00A0"}</div>;
+                })}
+              </div>
             )}
           </div>
         </div>
