@@ -133,15 +133,18 @@ async function fetchUser() {
   }
 }
 
+import { useNotifications } from '../stores/useNotifications';
+const toast = useNotifications();
+
 async function updateProfile() {
   updating.value = true;
   try {
-    const response = await api.put('/user', form.value);
+    const response = await api.put('/user/profile', form.value);
     user.value = response.data.data;
-    alert('Profile updated!');
+    toast.success('Profile updated!');
   } catch (err) {
     console.error(err);
-    alert('Failed to update profile');
+    toast.error('Failed to update profile');
   } finally {
     updating.value = false;
   }

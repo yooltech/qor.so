@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -125,53 +126,14 @@ body {
   outline: none;
 }
 
-/* Line 1 = Title */
-.tiptap > p:first-child {
-  font-size: 1.75rem;   /* 28px */
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--foreground);
-  margin-bottom: 0.35rem;
-}
-
-/* Line 2 = Subtitle */
-.tiptap > p:nth-child(2) {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.75rem;
-}
-
 /* Placeholders */
 .tiptap p.is-editor-empty:first-child::before {
   color: var(--muted-foreground);
   opacity: 0.4;
-  content: "Title";
-  float: left;
-  height: 0;
-  pointer-events: none;
-  font-size: 1.75rem;
-  font-weight: 700;
-}
-
-.tiptap p.is-empty:nth-child(2)::before {
-  color: var(--muted-foreground);
-  content: "Subtitle";
-  float: left;
-  height: 0;
-  pointer-events: none;
-  opacity: 0.35;
-}
-
-.tiptap p.is-empty:not(:first-child):not(:nth-child(2))::before {
-  color: var(--muted-foreground);
   content: "Start writing...";
   float: left;
   height: 0;
   pointer-events: none;
-  opacity: 0.35;
 }
 
 /* Lists */
@@ -214,27 +176,86 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* Task list items */
+/* Task list items (Premium UI) */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
 .tiptap ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .tiptap ul[data-type="taskList"] li > label {
   flex: 0 0 auto;
   user-select: none;
   margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Custom Checkbox Design */
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"] {
+  appearance: none;
+  background-color: var(--background);
+  margin: 0;
+  font: inherit;
+  color: var(--primary);
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid var(--border);
+  border-radius: 0.35rem;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"]::before {
+  content: "";
+  width: 0.65rem;
+  height: 0.65rem;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--primary-foreground);
+  background-color: CanvasText;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"]:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .tiptap ul[data-type="taskList"] li > div {
   flex: 1 1 auto;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .tiptap ul[data-type="taskList"] li[data-checked="true"] > div {
   color: var(--muted-foreground);
   text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.tiptap ul[data-type="taskList"] li[data-checked="true"] > label input[type="checkbox"] {
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 /* Blockquote */

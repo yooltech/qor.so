@@ -43,9 +43,44 @@
     </div>
 
     <!-- Content -->
-    <div class="px-6 pb-20 flex-1">
-      <NoteEditor v-if="mode === 'note'" />
-      <FileUploader v-else />
+    <div class="px-6 pb-20 flex-1 space-y-8">
+      <div>
+        <NoteEditor v-if="mode === 'note'" />
+        <FileUploader v-else />
+      </div>
+
+      <!-- Recent Notes (for guests) -->
+      <div v-if="recentNotes.length > 0 && !user" class="max-w-4xl mx-auto animate-fade-in">
+        <div class="flex items-center justify-between mb-4 border-b pb-2">
+          <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+            <History class="w-4 h-4 text-primary" />
+            Your Recent Notes
+          </h2>
+          <button @click="clearRecentNotes" class="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
+            <Trash2 class="w-3 h-3" />
+            Clear
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <router-link 
+            v-for="note in recentNotes" 
+            :key="note.id" 
+            :to="`/${note.slug || note.id}`"
+            class="flex items-center justify-between p-4 rounded-xl border bg-card hover:border-primary/50 transition-all group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-primary">
+                <FileText class="w-4 h-4" />
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-sm font-medium text-foreground truncate max-w-[150px]">{{ note.title || 'Untitled Note' }}</p>
+                <p class="text-[10px] text-muted-foreground font-mono">/{{ note.slug || note.id.substring(0, 8) }}</p>
+              </div>
+            </div>
+            <ArrowUpRight class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          </router-link>
+        </div>
+      </div>
     </div>
 
     <!-- Footer Stats -->
@@ -57,7 +92,7 @@
 import { ref, onMounted } from 'vue';
 import { 
   FileText, LayoutDashboard, LogIn, Upload, 
-  ShieldCheck, Braces, Sun, Moon 
+  ShieldCheck, Braces, Sun, Moon, History, Trash2, ArrowUpRight
 } from 'lucide-vue-next';
 import NoteEditor from '../components/NoteEditor.vue';
 import FileUploader from '../components/FileUploader.vue';
@@ -68,8 +103,21 @@ import api from '../services/api';
 const mode = ref('note');
 const user = ref(null);
 const isDark = ref(false);
+const recentNotes = ref([]);
+
+function loadRecentNotes() {
+  recentNotes.value = JSON.parse(localStorage.getItem('recent_notes') || '[]');
+}
+
+function clearRecentNotes() {
+  if (confirm('Clear your recent notes history?')) {
+    localStorage.removeItem('recent_notes');
+    recentNotes.value = [];
+  }
+}
 
 onMounted(async () => {
+  loadRecentNotes();
   const token = localStorage.getItem('auth_token');
   if (token) {
     try {

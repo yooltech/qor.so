@@ -42,7 +42,7 @@
           <span class="text-sm text-muted-foreground font-mono">/</span>
           <input type="text" placeholder="my-note" v-model="slug"
             @input="slug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '')"
-            class="flex-1 px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+            class="flex-1 px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
         </div>
         <p class="text-xs text-muted-foreground mt-1">Leave empty for an auto-generated ID</p>
       </div>
@@ -50,8 +50,24 @@
         <label class="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
           <Lock class="w-3.5 h-3.5" /> Password Protection
         </label>
-        <input type="password" placeholder="Leave empty for no password" v-model="password"
-          class="w-full px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <input :type="showPassword ? 'text' : 'password'" placeholder="Leave empty for no password" v-model="password"
+              class="w-full px-3 py-2 pr-10 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+            <button 
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Eye v-if="!showPassword" class="w-4 h-4" />
+              <EyeOff v-else class="w-4 h-4" />
+            </button>
+          </div>
+          <button v-if="password" @click="password = ''" class="px-3 py-2 rounded-lg bg-secondary text-xs font-medium hover:bg-secondary/80">
+            Clear
+          </button>
+        </div>
+        <p v-if="props.initialPassword && !password" class="text-xs text-red-500 mt-1">Note: This will remove the password.</p>
       </div>
       <div>
         <label class="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
@@ -157,7 +173,7 @@
           <Link2 class="w-3 h-3" /> /{{ slug }}
         </span>
         <span v-if="password" class="flex items-center gap-1 px-2 py-1 rounded bg-accent text-accent-foreground">
-          <Lock class="w-3 h-3" /> Password set
+          <Lock class="w-3 h-3" /> {{ props.initialPassword && !password ? 'Password will be removed' : 'Password set' }}
         </span>
         <span v-if="expiresIn" class="flex items-center gap-1 px-2 py-1 rounded bg-accent text-accent-foreground">
           <Clock class="w-3 h-3" /> Expires in {{ EXPIRY_OPTIONS.find(o => o.value === expiresIn)?.label }}
@@ -190,17 +206,19 @@ import Placeholder from '@tiptap/extension-placeholder';
 import {
   Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2,
   List, ListOrdered, CheckSquare, Code2,
-  FileText, Braces, Save, Loader2, Link2, Lock, Clock
+  FileText, Braces, Save, Loader2, Link2, Lock, Clock, Eye, EyeOff
 } from 'lucide-vue-next';
 import api from '../services/api';
 import { useRouter } from 'vue-router';
+import { useNotifications } from '../stores/useNotifications';
 
 const props = defineProps({
   initialTitle:    { type: String,  default: '' },
   initialContent:  { type: String,  default: '' },
   initialFormat:   { type: String,  default: 'text' },
   initialSlug:     { type: String,  default: '' },
-  initialExpiresIn:{ type: Number,  default: null },
+  initialExpiresIn:{ type: Number,  default: undefined },
+  initialPassword: { type: String,  default: '' },
   mode:            { type: String,  default: 'create' },
   saving:          { type: Boolean, default: false }
 });
@@ -212,9 +230,11 @@ const title    = ref(props.initialTitle);
 const slug     = ref(props.initialSlug);
 const format   = ref(props.initialFormat === 'html' ? 'text' : props.initialFormat);
 const jsonBody = ref(props.initialFormat === 'json' ? props.initialContent : '');
-const password = ref('');
+const password = ref(props.initialPassword);
 const expiresIn = ref(props.initialExpiresIn);
 const showOptions = ref(false);
+const showPassword = ref(false);
+const toast = useNotifications();
 
 const EXPIRY_OPTIONS = [
   { label: 'Never',  value: null  },
@@ -281,10 +301,14 @@ async function handleSave() {
     content:    finalContent,
     format:     format.value === 'json' ? 'json' : 'html',
     title:      finalTitle,
-    password:   password.value || undefined,
-    expires_in: expiresIn.value || undefined,
+    password:   password.value, // Send as is (empty means remove if modified)
+    current_password: props.initialPassword,
     slug:       slug.value || undefined,
   };
+
+  if (expiresIn.value !== undefined) {
+    data.expires_in = expiresIn.value;
+  }
 
   if (props.mode === 'edit') {
     emit('save', data);
@@ -294,10 +318,30 @@ async function handleSave() {
   try {
     const response = await api.post('/notes', data);
     const note = response.data.data;
+    
+    // Guest Tracking: Save to localStorage if not logged in
+    if (!localStorage.getItem('auth_token')) {
+      const recentNotes = JSON.parse(localStorage.getItem('recent_notes') || '[]');
+      const newEntry = {
+        id: note.id,
+        slug: note.slug,
+        title: note.title || 'Untitled Note',
+        created_at: note.created_at
+      };
+      
+      // Remove duplicate if exists, then add to front
+      const filtered = recentNotes.filter(n => n.id !== note.id);
+      filtered.unshift(newEntry);
+      
+      // Keep only last 5
+      localStorage.setItem('recent_notes', JSON.stringify(filtered.slice(0, 5)));
+    }
+
+    toast.success('Note saved successfully!');
     router.push(`/${note.slug || note.id}`);
   } catch (err) {
     console.error(err);
-    alert(err.response?.data?.message || 'Failed to save note');
+    toast.error(err.response?.data?.message || 'Failed to save note');
   }
 }
 

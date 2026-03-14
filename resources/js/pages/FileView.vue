@@ -179,14 +179,14 @@ async function fetchFile() {
 async function handleUnlock() {
   verifying.value = true;
   try {
-    const response = await api.get(`/shared-files/${idOrSlug}`, {
+    const response = await api.get(`/files/${idOrSlug}`, {
       params: { password: passwordInput.value }
     });
     file.value = response.data.data;
     unlocked.value = true;
   } catch (err) {
     console.error(err);
-    alert('Incorrect password');
+    toast.error('Incorrect password');
   } finally {
     verifying.value = false;
   }

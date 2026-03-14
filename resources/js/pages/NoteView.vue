@@ -55,12 +55,16 @@
           </div>
           <p class="text-xl font-semibold text-foreground">This note is protected</p>
           <p class="mt-2 text-muted-foreground text-sm">Enter the password to view this note.</p>
-          <form @submit.prevent="handleUnlock" class="mt-6 flex gap-2 max-w-xs mx-auto">
+          <div v-if="unlockError" class="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm animate-shake">
+            {{ unlockError }}
+          </div>
+          <form @submit.prevent="handleUnlock" class="mt-2 flex gap-2 max-w-xs mx-auto">
             <input
               type="password"
               placeholder="Password"
               v-model="passwordInput"
               class="flex-1 px-4 py-3 rounded-xl border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+              :class="{ 'border-destructive': unlockError }"
               autofocus
             />
             <button
@@ -80,11 +84,11 @@
         <div class="rounded-xl border bg-card overflow-hidden shadow-sm animate-fade-in">
           <!-- Action bar -->
           <div class="px-6 py-3 border-b bg-secondary/10 flex items-center justify-between gap-4 flex-wrap">
-            <div class="flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-              <span v-if="note.expires_at" class="flex items-center gap-1 text-primary">
+            <div class="flex items-center gap-2 text-[10px] text-muted-foreground  tracking-widest font-bold">
+              <span v-if="note.expires_at" class="flex items-center gap-1 text-primary uppercase">
                 <Clock class="w-3 h-3" /> Expires {{ new Date(note.expires_at).toLocaleDateString() }}
               </span>
-              <span class="font-mono">{{ note.format }}</span>
+              <span class="font-mono ">{{ note.title }}</span>
             </div>
             <div class="flex items-center gap-1">
               <button
@@ -113,16 +117,10 @@
             </div>
           </div>
 
-          <!-- Title (Restored) -->
-          <div v-if="note.title" class="px-8 pt-7 pb-2">
-            <h1 class="text-2xl font-bold text-foreground leading-tight">{{ note.title }}</h1>
-            <div class="border-b mt-4 opacity-30"></div>
-          </div>
-
             <!-- Content: HTML rich text -->
             <div
               v-if="note.format === 'html' || note.format === 'text'"
-              class="prose prose-neutral dark:prose-invert max-w-none px-8 py-6 text-foreground leading-7"
+              class="prose prose-neutral dark:prose-invert max-w-none px-8 py-6 text-foreground leading-7 tiptap"
               v-html="cleanedContent"
             />
 
@@ -168,8 +166,9 @@ const unlocked = ref(false);
 const passwordInput = ref('');
 const verifying = ref(false);
 const copied = ref(false);
+const unlockError = ref(null);
 
-const isPasswordProtected = computed(() => note.value?.password && !unlocked.value);
+const isPasswordProtected = computed(() => note.value?.is_protected && !unlocked.value);
 const isExpired = computed(() => note.value?.expires_at && new Date(note.value.expires_at) <= new Date());
 const jsonLineCount = computed(() => (note.value?.content || '').split('\n').length);
 
@@ -220,16 +219,29 @@ async function fetchNote() {
 }
 
 async function handleUnlock() {
+  unlockError.value = null; // Clear prev error
   verifying.value = true;
   try {
     const response = await api.get(`/notes/${idOrSlug}`, {
       params: { password: passwordInput.value }
     });
-    note.value = response.data.data;
-    unlocked.value = true;
+
+    // If backend returns data but content is null, and it's protected, it means it's still locked
+    if (response.data.data.is_protected && !response.data.data.content) {
+      unlockError.value = 'Incorrect password. Please try again.';
+      passwordInput.value = '';
+    } else {
+      note.value = response.data.data;
+      unlocked.value = true;
+    }
   } catch (err) {
     console.error(err);
-    alert('Incorrect password');
+    if (err.response?.status === 401) {
+      unlockError.value = 'Incorrect password. Please try again.';
+    } else {
+      unlockError.value = err.response?.data?.message || 'Failed to unlock note';
+    }
+    passwordInput.value = '';
   } finally {
     verifying.value = false;
   }

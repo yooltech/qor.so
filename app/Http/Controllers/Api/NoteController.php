@@ -32,9 +32,22 @@ class NoteController extends Controller
         return response()->json(['message' => 'Note created', 'data' => $note], 201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $note = $this->noteService->findNote($id);
+        $password = $request->query('password');
+        $note = $this->noteService->findNote($id, $password);
+        
+        // Check password protection
+        if ($note->password_hash) {
+            if (!$password || !password_verify($password, $note->password_hash)) {
+                // Return metadata only, hide content
+                $note->content = null;
+                $note->is_protected = true;
+                return response()->json(['data' => $note]);
+            }
+        }
+
+        $note->is_protected = false;
         return response()->json(['data' => $note]);
     }
 
@@ -50,12 +63,18 @@ class NoteController extends Controller
         }
 
         $validated = $request->validate([
-            'content'  => ['sometimes', 'string'],
-            'title'    => ['nullable', 'string', 'max:255'],
-            'format'   => ['sometimes', 'string', 'in:text,html,json'],
-            'slug'     => ['nullable', 'string', 'max:100'],
+            'content' => ['sometimes', 'string'],
+            'title' => ['nullable', 'string', 'max:255'],
+            'format' => ['sometimes', 'string', 'in:text,html,json'],
+            'slug' => ['nullable', 'string', 'max:100'],
             'password' => ['nullable', 'string', 'max:255'],
+            'expires_in' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password_hash'] = bcrypt($validated['password']);
+            unset($validated['password']);
+        }
 
         $updatedNote = $this->noteService->updateNote($note, $validated);
         return response()->json(['message' => 'Note updated', 'data' => $updatedNote]);

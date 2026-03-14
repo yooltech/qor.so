@@ -90,6 +90,7 @@ import api from '../services/api';
 const router = useRouter();
 const loading = ref(false);
 const step = ref(1);
+const toast = useNotifications();
 
 const form = ref({
   email: '',
@@ -103,6 +104,7 @@ const handleSubmit = async () => {
     if (step.value === 1) {
       await api.post('/request-otp', { email: form.value.email });
       step.value = 2;
+      toast.success('OTP sent to your email');
     } else {
       const response = await api.post('/verify-otp', { 
         email: form.value.email,
@@ -110,11 +112,12 @@ const handleSubmit = async () => {
       });
       localStorage.setItem('auth_token', response.data.data.token);
       localStorage.setItem('auth_user', JSON.stringify(response.data.data.user));
+      toast.success('Welcome back!');
       router.push('/');
     }
   } catch (err) {
     console.error(err);
-    alert(err.response?.data?.message || 'Authentication failed');
+    toast.error(err.response?.data?.message || 'Authentication failed');
   } finally {
     loading.value = false;
   }

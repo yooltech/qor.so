@@ -18,6 +18,15 @@ class Note extends Model
         'password_hash', 'expires_at', 'slug', 'is_encrypted', 
         'size_bytes', 'view_count'
     ];
+    
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'is_encrypted' => 'boolean',
+    ];
+
+    protected $hidden = [
+        'password_hash'
+    ];
 
     public function user()
     {

@@ -328,23 +328,30 @@ async function handleSignOut() {
   }
 }
 
+import { useNotifications } from '../stores/useNotifications';
+const toast = useNotifications();
+
 async function deleteNote(id) {
-  if (!confirm('Delete this note?')) return;
+  if (!confirm('Are you sure you want to delete this note?')) return;
   try {
     await api.delete(`/notes/${id}`);
     notes.value = notes.value.filter(n => n.id !== id);
+    toast.success('Note deleted');
   } catch (err) {
-    alert('Failed to delete note');
+    console.error(err);
+    toast.error('Failed to delete note');
   }
 }
 
 async function deleteFile(id) {
-  if (!confirm('Delete this file?')) return;
+  if (!confirm('Are you sure you want to delete this file?')) return;
   try {
-    await api.delete(`/shared-files/${id}`);
+    await api.delete(`/files/${id}`);
     files.value = files.value.filter(f => f.id !== id);
+    toast.success('File deleted');
   } catch (err) {
-    alert('Failed to delete file');
+    console.error(err);
+    toast.error('Failed to delete file');
   }
 }
 

@@ -17,7 +17,7 @@ class StoreNoteRequest extends FormRequest
             'content'      => ['required', 'string'],
             'title'        => ['nullable', 'string', 'max:255'],
             'format'       => ['sometimes', 'string', 'in:text,html,json'],
-            'slug'         => ['nullable', 'string', 'max:100', 'unique:notes,slug'],
+            'slug'         => ['nullable', 'string', 'max:100'],
             'password'     => ['nullable', 'string', 'max:255'],
             'expires_in'   => ['nullable', 'integer', 'min:1'],
             'expires_at'   => ['nullable', 'date'],

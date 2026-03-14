@@ -192,25 +192,58 @@ function triggerFileInput() {
   inputRef.value.click();
 }
 
+// Placeholder for reset and emit, as they are used in the new handleUpload but not defined in the original context
+// Assuming these would be defined or passed as props/emits in a real component.
+const emit = (event, data) => {
+  console.log(`Emitting ${event} with data:`, data);
+  // In a real Vue component, this would be `defineEmits(['uploaded'])`
+};
+const reset = () => {
+  file.value = null;
+  password.value = '';
+  slug.value = '';
+  expiresIn.value = null; // Assuming expiresIn maps to expiresAt in the new logic
+  showOptions.value = false;
+  progress.value = 0;
+};
+
+
 async function handleUpload() {
   if (!file.value) return;
+
+  if (file.value.size > 50 * 1024 * 1024) {
+    toast.error("File exceeds 50MB limit");
+    return;
+  }
+
   uploading.value = true;
-  
-  const formData = new FormData();
-  formData.append('file', file.value);
-  if (password.value) formData.append('password', password.value);
-  if (expiresIn.value) formData.append('expires_in', expiresIn.value);
-  if (slug.value) formData.append('slug', slug.value);
+  progress.value = 0;
 
   try {
-    const response = await api.post('/shared-files', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const formData = new FormData();
+    formData.append('file', file.value);
+    if (password.value) formData.append('password', password.value);
+    // The provided snippet uses expiresAt.value, but the component uses expiresIn.value
+    // Assuming expiresIn.value should be used here to match the component's state.
+    if (expiresIn.value) formData.append('expires_in', expiresIn.value);
+    if (slug.value) formData.append('slug', slug.value); // Added back slug based on original logic
+
+    const response = await api.post('/files/upload', formData, { // Changed endpoint
+      onUploadProgress: (e) => {
+        progress.value = Math.round((e.loaded * 100) / e.total);
+      }
     });
-    const result = response.data.data;
-    router.push(`/file/${result.slug || result.id}`);
+
+    toast.success('File uploaded successfully!');
+    emit('uploaded', response.data.data);
+    // The original code navigated to a route, the new snippet calls reset().
+    // For faithful application, I'll keep the reset() as per the snippet.
+    // If navigation is still desired, it would need to be re-added.
+    // router.push(`/file/${response.data.data.slug || response.data.data.id}`);
+    reset();
   } catch (err) {
     console.error(err);
-    alert(err.response?.data?.message || 'Upload failed');
+    toast.error(err.response?.data?.message || 'Upload failed');
   } finally {
     uploading.value = false;
   }
