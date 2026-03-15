@@ -68,9 +68,13 @@ qor.so is a lightweight, high-performance web platform built with Laravel and Vu
 
 ## 🔐 Feature Controls
 
-You can toggle core features via your `.env` file:
+You can toggle core features and page sections via your `.env` file:
 - `NOTE_LIVE_ENABLED=true/false` - Enable/Disable real-time collaboration.
 - `FILE_UPLOAD_ENABLED=true/false` - Enable/Disable file sharing.
+- `ABOUT_SHOW_ROADMAP=true/false` - Show/hide the Workspace Roadmap on the About page.
+- `ABOUT_SHOW_TEAM=true/false` - Show/hide the "Meet the Team" section.
+- `ABOUT_SHOW_TECH=true/false` - Show/hide the Technology Stack section.
+- `ABOUT_SHOW_OPEN_SOURCE=true/false` - Show/hide the Open Source/GitHub section.
 
 ## 🗺️ Roadmap: The Ultimate Workspace
 
