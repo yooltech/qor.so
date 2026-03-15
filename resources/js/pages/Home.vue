@@ -85,6 +85,27 @@
 
     <!-- Footer Stats -->
     <PlatformStats />
+
+    <!-- Footer Links -->
+    <footer class="border-t py-8 mt-auto">
+      <div class="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-muted-foreground">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center">
+            <img src="/chs/noteshare-express/logo.png" alt="qor.so" class="w-4 h-4 rounded-sm" />
+          </div>
+          <span class="text-xs font-semibold text-foreground tracking-tight">qor.so</span>
+          <span class="text-[10px]">&copy; {{ new Date().getFullYear() }}</span>
+        </div>
+        
+        <div class="flex items-center gap-6">
+          <a href="https://github.com/yooltech/qor.so" target="_blank" class="text-xs font-medium hover:text-primary transition-colors flex items-center gap-1.5">
+            <Github class="w-3.5 h-3.5" />
+            GitHub
+          </a>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-secondary font-bold uppercase tracking-widest">Open Source</span>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -92,7 +113,7 @@
 import { ref, onMounted } from 'vue';
 import { 
   FileText, LayoutDashboard, LogIn, Upload, 
-  ShieldCheck, Braces, Sun, Moon, History, Trash2, ArrowUpRight
+  ShieldCheck, Braces, Sun, Moon, History, Trash2, ArrowUpRight, Github
 } from 'lucide-vue-next';
 import NoteEditor from '../components/NoteEditor.vue';
 import FileUploader from '../components/FileUploader.vue';
