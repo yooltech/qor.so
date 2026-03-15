@@ -36,7 +36,7 @@ qor.so is a lightweight, high-performance web platform built with Laravel and Vu
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/yooltech/qor.so.git
-   cd noteshare-express
+   cd qor.so
    ```
 
 2. **Install dependencies**:

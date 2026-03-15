@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::post('/request-otp', [AuthController::class, 'requestOtp']);
 // Public note routes (guests can create, view & edit unowned notes)
-// Public note lookup routes
+Route::post('notes', [NoteController::class, 'store']);
+Route::get('notes/check-slug', [NoteController::class, 'checkSlug']);
 Route::get('/notes/{note}', [NoteController::class, 'show']);
+Route::put('notes/{note}', [NoteController::class, 'update']);
+Route::patch('notes/{note}', [NoteController::class, 'update']);
+
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('login');
 
 // Public stats
@@ -27,12 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::get('/users', [\App\Http\Controllers\Api\UserController::class, 'index']);
 
-    // Protected Note Routes
-    Route::get('notes/check-slug', [NoteController::class, 'checkSlug']);
+    // Protected Note Routes (Auth-only: list owned notes, delete)
     Route::get('notes', [NoteController::class, 'index']);
-    Route::post('notes', [NoteController::class, 'store']);
-    Route::put('notes/{note}', [NoteController::class, 'update']);
-    Route::patch('notes/{note}', [NoteController::class, 'update']);
     Route::delete('notes/{note}', [NoteController::class, 'destroy']);
     
     // Live Sharing Routes

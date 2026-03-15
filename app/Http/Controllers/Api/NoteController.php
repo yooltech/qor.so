@@ -29,7 +29,7 @@ class NoteController extends Controller
 
     public function store(StoreNoteRequest $request): JsonResponse
     {
-        $userId = $request->user()?->id; // null for guests
+        $userId = auth('sanctum')->id(); // null for guests, works even without middleware
         $data = $request->validated();
         
         // Force live sharing off if disabled
