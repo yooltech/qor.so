@@ -131,11 +131,28 @@
                         <Eye class="w-3 h-3" />
                         {{ (note.view_count || 0).toLocaleString() }}
                       </span>
+                      <span v-if="note.is_password_protected" class="flex items-center gap-1 text-[10px] text-primary font-bold uppercase">
+                        <Lock class="w-3 h-3" /> Protected
+                      </span>
                       <span v-if="note.slug" class="text-xs text-primary font-mono">/{{ note.slug }}</span>
                     </div>
-                    <pre class="font-mono text-sm text-foreground truncate max-w-full">
-                      {{ note.content.slice(0, 120) }}{{ note.content.length > 120 ? "..." : "" }}
+                    <div class="mb-2">
+                       <h3 v-if="note.title" class="text-sm font-semibold text-foreground truncate">
+                         {{ note.title }}
+                       </h3>
+                       <p v-else class="text-xs text-muted-foreground italic">Untitled Note</p>
+                    </div>
+                    <pre v-if="note.is_password_protected" class="font-mono text-[11px] text-muted-foreground italic truncate max-w-full bg-secondary/30 p-2 rounded-md">
+                      [Protected Content]
                     </pre>
+                    <pre v-else class="font-mono text-[11px] text-foreground truncate max-w-full bg-secondary/30 p-2 rounded-md">
+                      {{ note.content?.slice(0, 120) || 'No content' }}{{ (note.content?.length > 120) ? "..." : "" }}
+                    </pre>
+                    <div class="mt-2 flex items-center gap-2">
+                      <span class="text-[10px] text-muted-foreground font-medium">
+                        {{ new Date(note.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) }}
+                      </span>
+                    </div>
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
                     <router-link
@@ -261,7 +278,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   FileText, Search, Trash2, ExternalLink, Loader2, LogOut, Plus,
-  Eye, HardDrive, TrendingUp, User, Upload, File
+  Eye, HardDrive, TrendingUp, User, Upload, File, Lock
 } from 'lucide-vue-next';
 import api from '../services/api';
 import Navbar from '../components/Navbar.vue';
@@ -283,10 +300,15 @@ const totalFileViews = computed(() => files.value.reduce((sum, f) => sum + (f.vi
 const totalFileBytes = computed(() => files.value.reduce((sum, f) => sum + (f.file_size || 0), 0));
 const maxFileSize = computed(() => files.value.length > 0 ? formatBytes(Math.max(...files.value.map(f => f.file_size || 0))) : "0 B");
 
-const filteredNotes = computed(() => notes.value.filter(n => 
-  n.content.toLowerCase().includes(search.value.toLowerCase()) || 
-  (n.title && n.title.toLowerCase().includes(search.value.toLowerCase()))
-));
+const filteredNotes = computed(() => notes.value.filter(n => {
+  const s = search.value.toLowerCase();
+  const dateStr = new Date(n.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).toLowerCase();
+  return (
+    (n.content && n.content.toLowerCase().includes(s)) || 
+    (n.title && n.title.toLowerCase().includes(s)) ||
+    dateStr.includes(s)
+  );
+}));
 
 const filteredFiles = computed(() => files.value.filter(f => 
   f.file_name.toLowerCase().includes(search.value.toLowerCase())

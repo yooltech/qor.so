@@ -73,7 +73,7 @@ const faqs = [
   },
   {
     question: "Is my data encrypted?",
-    answer: "When you use password protection or an email account, your notes are fully encrypted. Without the password or account access, even our server cannot read the plaintext content. For standard notes without passwords or accounts, content is stored in plaintext to allow for easy sharing."
+    answer: "When you use password protection or an email account, your notes are fully encrypted. Your privacy is our priority. Even notes created without a password or account are protected using a unique slug-based key, ensuring that no content is ever stored in plain text on our servers."
   },
   {
     question: "How does Live Sharing work?",

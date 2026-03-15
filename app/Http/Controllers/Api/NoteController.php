@@ -49,6 +49,9 @@ class NoteController extends Controller
         // Since resolveRouteBinding already found the note, we just need to handle content
         $note = $this->noteService->prepareForView($note, $password);
         
+        // Increment view count
+        $note->increment('view_count');
+        
         // The service now handles expiration and password protection internally
         return response()->json(['data' => $note]);
     }
@@ -87,11 +90,6 @@ class NoteController extends Controller
         // Force live sharing off if disabled
         if (!env('NOTE_LIVE_ENABLED', true)) {
             $validated['is_live'] = false;
-        }
-
-        if (!empty($validated['password'])) {
-            $validated['password_hash'] = bcrypt($validated['password']);
-            unset($validated['password']);
         }
 
         $updatedNote = $this->noteService->updateNote($note, $validated);

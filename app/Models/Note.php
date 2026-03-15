@@ -24,6 +24,10 @@ class Note extends Model
         'is_encrypted' => 'boolean',
     ];
 
+    protected $appends = [
+        'is_password_protected'
+    ];
+
     protected $hidden = [
         'password_hash'
     ];
@@ -36,6 +40,11 @@ class Note extends Model
     public function connections()
     {
         return $this->hasMany(NoteConnection::class);
+    }
+
+    public function getIsPasswordProtectedAttribute(): bool
+    {
+        return !empty($this->password_hash);
     }
 
     /**

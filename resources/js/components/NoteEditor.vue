@@ -330,6 +330,33 @@
         </button>
       </div>
     </div>
+    <!-- Password Security Modal -->
+    <div v-if="showPasswordSecurityModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div class="w-full max-w-sm rounded-2xl border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+          <ShieldAlert class="w-6 h-6 text-primary" />
+        </div>
+        <h3 class="text-lg font-bold text-foreground mb-2">Important Security Notice</h3>
+        <p class="text-sm text-muted-foreground mb-6 leading-relaxed">
+          You are setting a password for this note. This will <strong>encrypt your data</strong>. 
+          There is <strong>no password recovery</strong> and no backup. If you lose this password, your data is lost forever.
+        </p>
+        <div class="flex flex-col gap-2">
+          <button 
+            @click="confirmPasswordSecurity"
+            class="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition-all shadow-lg shadow-primary/20"
+          >
+            I Understand, Lock It
+          </button>
+          <button 
+            @click="showPasswordSecurityModal = false"
+            class="w-full py-2.5 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-all"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -338,7 +365,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { 
   Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, 
   List, ListOrdered, CheckSquare, Code2, 
-  FileText, Braces, Save, Loader2, Link2, Lock, Clock, Eye, EyeOff, Radio, Settings2, Copy, Dices
+  FileText, Braces, Save, Loader2, Link2, Lock, Clock, Eye, EyeOff, Radio, Settings2, Copy, Dices, ShieldAlert
 } from 'lucide-vue-next';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import QrcodeVue from 'qrcode.vue';
@@ -404,6 +431,8 @@ const isBroadcasting = ref(false);
 const lastBroadcastedContent = ref('');
 const copied = ref(false);
 const toast = useNotifications();
+const showPasswordSecurityModal = ref(false);
+const passwordConfirmed = ref(false);
 
 const slugStatus = ref('idle'); // idle, checking, available, taken
 const slugSuggestions = ref([]);
@@ -578,7 +607,19 @@ function copyShareLink() {
   toast.success('Link copied to clipboard!');
 }
 
+function confirmPasswordSecurity() {
+  passwordConfirmed.value = true;
+  showPasswordSecurityModal.value = false;
+  handleSave();
+}
+
 async function handleSave() {
+  // If password is set and not yet confirmed by user, show the security modal
+  if (password.value && !passwordConfirmed.value) {
+    showPasswordSecurityModal.value = true;
+    return;
+  }
+
   let finalTitle   = title.value.trim() || undefined;
   let finalContent = '';
 

@@ -32,9 +32,9 @@
             <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <ShieldCheck class="w-5 h-5" />
             </div>
-            <h3 class="text-lg font-bold">Secure Encryption</h3>
+            <h3 class="text-lg font-bold">Absolute Privacy</h3>
             <p class="text-sm text-muted-foreground leading-relaxed">
-              When you use password protection or an email account, your notes are fully encrypted. Your privacy is our priority.
+              When you use password protection or an email account, your notes are fully encrypted. Your privacy is our priority. Even notes without a password are protected with a unique slug-based key.
             </p>
           </div>
         </div>
