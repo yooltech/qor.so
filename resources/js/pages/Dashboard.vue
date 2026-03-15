@@ -33,7 +33,7 @@
         <Loader2 class="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
       <template v-else>
-        <h1 class="text-3xl font-bold text-foreground">Dashboard</h1>
+        <h1 class="text-3xl font-bold text-foreground">MyDesk</h1>
         <p class="mt-1 text-muted-foreground text-sm">
           {{ notes.length }} note{{ notes.length !== 1 ? "s" : "" }} · {{ files.length }} file{{ files.length !== 1 ? "s" : "" }}
         </p>

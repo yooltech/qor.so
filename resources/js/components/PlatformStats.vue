@@ -14,32 +14,7 @@
         <StatItem :icon="TrendingUp" label="Today" :value="stats.items_today.toLocaleString()" />
       </div>
     </div>
-
-    <!-- Brand footer -->
-    <div class="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-      <span>
-        Powered by
-        <a
-          href="https://yooltech.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="font-semibold text-foreground hover:text-primary transition-colors"
-        >
-          Yooltech
-        </a>
-      </span>
-      <span>
-        Made with ❤️ in
-        <a
-          href="https://hamar.so"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-foreground hover:text-primary transition-colors font-medium"
-        >
-          Hamar
-        </a>
-      </span>
-    </div>
+    
   </div>
 </template>
 

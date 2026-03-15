@@ -76,7 +76,7 @@ const Profile = () => {
               to="/dashboard"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Dashboard
+              MyDesk
             </Link>
           </div>
         </div>

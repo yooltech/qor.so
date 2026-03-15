@@ -8,13 +8,10 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('/request-otp', [AuthController::class, 'requestOtp']);
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-
 // Public note routes (guests can create, view & edit unowned notes)
-Route::post('/notes', [NoteController::class, 'store']);
+// Public note lookup routes
 Route::get('/notes/{note}', [NoteController::class, 'show']);
-Route::put('/notes/{note}', [NoteController::class, 'update']);
-Route::patch('/notes/{note}', [NoteController::class, 'update']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('login');
 
 // Public stats
 Route::get('/stats', [\App\Http\Controllers\Api\StatsController::class, 'index']);
@@ -30,9 +27,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::get('/users', [\App\Http\Controllers\Api\UserController::class, 'index']);
 
-    // Notes (auth-only: list, delete)
-    Route::get('/notes', [NoteController::class, 'index']);
-    Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
+    // Protected Note Routes
+    Route::get('notes/check-slug', [NoteController::class, 'checkSlug']);
+    Route::get('notes', [NoteController::class, 'index']);
+    Route::post('notes', [NoteController::class, 'store']);
+    Route::put('notes/{note}', [NoteController::class, 'update']);
+    Route::patch('notes/{note}', [NoteController::class, 'update']);
+    Route::delete('notes/{note}', [NoteController::class, 'destroy']);
+    
+    // Live Sharing Routes
+    Route::post('notes/{note}/toggle-live', [NoteController::class, 'toggleLive']);
+    Route::post('notes/{note}/join-live', [NoteController::class, 'joinLive']);
+    Route::put('notes/{note}/connections/{connection}', [NoteController::class, 'updateConnection']);
+    Route::post('notes/{note}/broadcast', [NoteController::class, 'broadcastUpdate']);
 
     // Shared Files (auth-only: list, delete)
     Route::get('/shared-files', [\App\Http\Controllers\Api\SharedFileController::class, 'index']);

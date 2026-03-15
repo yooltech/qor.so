@@ -27,7 +27,7 @@
             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <LayoutDashboard class="w-4 h-4" />
-            <span class="hidden sm:inline">Dashboard</span>
+            <span class="hidden sm:inline">MyDesk</span>
           </router-link>
           <router-link
             v-else

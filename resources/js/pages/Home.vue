@@ -23,7 +23,7 @@
     </div>
 
     <!-- Mode toggle -->
-    <div class="max-w-4xl mx-auto px-6 mb-6">
+    <div v-if="isFileUploadEnabled()" class="max-w-4xl mx-auto px-6 mb-6">
       <div class="flex items-center gap-1 rounded-lg bg-secondary p-1 w-fit mx-auto">
         <button
           @click="mode = 'note'"
@@ -99,6 +99,7 @@ import FileUploader from '../components/FileUploader.vue';
 import PlatformStats from '../components/PlatformStats.vue';
 import Navbar from '../components/Navbar.vue';
 import api from '../services/api';
+import { isFileUploadEnabled } from '../services/features';
 
 const mode = ref('note');
 const user = ref(null);

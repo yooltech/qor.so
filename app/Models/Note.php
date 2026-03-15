@@ -32,4 +32,20 @@ class Note extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function connections()
+    {
+        return $this->hasMany(NoteConnection::class);
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     * Support both UUID and Slug.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where('id', $value)
+            ->orWhere('slug', $value)
+            ->firstOrFail();
+    }
 }

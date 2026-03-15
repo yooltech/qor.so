@@ -7,7 +7,7 @@
         {{ step === 1 ? "Sign In" : "Verify Code" }}
       </h1>
       <p class="mt-2 text-muted-foreground text-center">
-        {{ step === 1 ? "Enter your email to receive a login code" : `We sent a code to ${form.email}` }}
+        {{ step === 1 ? "Enter your email to receive a login code and link" : `Enter the code or click the button sent to ${form.email}` }}
       </p>
 
       <div class="mt-8 border-2 border-primary bg-primary/5 p-6 rounded-2xl flex flex-col items-center gap-4 text-center animate-fade-in shadow-lg">
@@ -54,7 +54,7 @@
             />
           </div>
           <p class="text-[10px] text-center text-muted-foreground uppercase tracking-widest px-4">
-            Warning: This is the ONLY way to access your notes. Keep this email safe.
+            Warning: This is the ONLY way to access your notes. Keep the email safe.
           </p>
         </div>
 
@@ -81,13 +81,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { Loader2, Mail, Lock, ShieldAlert } from 'lucide-vue-next';
 import Navbar from '../components/Navbar.vue';
 import api from '../services/api';
+import { useNotifications } from '../stores/useNotifications';
 
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const step = ref(1);
 const toast = useNotifications();
@@ -97,6 +99,27 @@ const form = ref({
   otp: ''
 });
 
+onMounted(async () => {
+  // Check for magic link params
+  const { email, expires, signature } = route.query;
+  if (email && expires && signature && route.path.includes('/verify')) {
+    loading.value = true;
+    try {
+      toast.info('Verifying magic link...');
+      const response = await api.post('/auth/verify-magic-link', { email, expires, signature });
+      localStorage.setItem('auth_token', response.data.data.token);
+      localStorage.setItem('auth_user', JSON.stringify(response.data.data.user));
+      toast.success('Login successful!');
+      router.push('/');
+    } catch (err) {
+      toast.error('Invalid or expired login link');
+      router.push('/login');
+    } finally {
+      loading.value = false;
+    }
+  }
+});
+
 const handleSubmit = async () => {
   loading.value = true;
   
@@ -104,7 +127,7 @@ const handleSubmit = async () => {
     if (step.value === 1) {
       await api.post('/request-otp', { email: form.value.email });
       step.value = 2;
-      toast.success('OTP sent to your email');
+      toast.success('Login credentials sent to your email');
     } else {
       const response = await api.post('/verify-otp', { 
         email: form.value.email,

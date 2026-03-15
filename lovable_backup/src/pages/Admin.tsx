@@ -137,7 +137,7 @@ const Admin = () => {
               to="/dashboard"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Dashboard
+              MyDesk
             </Link>
           </div>
         </div>
@@ -174,9 +174,8 @@ const Admin = () => {
             {filtered.map((u) => (
               <div
                 key={u.id}
-                className={`rounded-xl border bg-card p-4 flex items-center justify-between gap-4 ${
-                  u.banned ? "opacity-60" : ""
-                }`}
+                className={`rounded-xl border bg-card p-4 flex items-center justify-between gap-4 ${u.banned ? "opacity-60" : ""
+                  }`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">

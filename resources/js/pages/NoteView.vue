@@ -15,6 +15,15 @@
             <Pencil class="w-4 h-4" />
             <span class="hidden sm:inline">Edit</span>
           </router-link>
+          
+          <!-- Live Control (Owner) -->
+          <LiveControl v-if="isLiveEnabled() && canEdit && note" :note="note" />
+
+          <!-- Live Status (Guest) -->
+          <div v-if="isLiveEnabled() && !canEdit && note?.is_live" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest animate-pulse">
+            <Radio class="w-3 h-3" />
+            Live
+          </div>
         </div>
       </template>
     </Navbar>
@@ -136,6 +145,25 @@
             <div v-else class="px-8 py-6 text-sm leading-7 text-foreground whitespace-pre-wrap">{{ cleanedContent }}</div>
           </div>
 
+          <!-- Join Live Overlay (for guests on live notes) -->
+          <div v-if="isLiveEnabled() && !canEdit && note?.is_live && !isAllowed" class="mt-6 p-8 bg-card border border-primary/20 rounded-2xl text-center shadow-lg animate-fade-in">
+            <Smartphone class="w-10 h-10 mx-auto text-primary mb-4" />
+            <h3 class="text-lg font-bold">Join Live Session</h3>
+            <p class="text-sm text-muted-foreground mt-2 mb-6">This note is being shared live. Request access to see real-time updates.</p>
+            
+            <button 
+              @click="joinLive"
+              :disabled="joining"
+              class="w-full max-w-xs mx-auto px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            >
+              <Loader2 v-if="joining" class="w-4 h-4 animate-spin" />
+              <span>Request Access</span>
+            </button>
+            <p v-if="joinStatus === 'pending'" class="mt-4 text-xs font-semibold text-primary animate-pulse">
+              Waiting for owner to allow you...
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
@@ -143,11 +171,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { FileText, Loader2, Lock, Clock, Copy, Check, ClipboardCopy, Pencil } from 'lucide-vue-next';
+import { FileText, Loader2, Lock, Clock, Copy, Check, ClipboardCopy, Pencil, Radio, Smartphone } from 'lucide-vue-next';
 import api from '../services/api';
 import Navbar from '../components/Navbar.vue';
+import LiveControl from '../components/LiveControl.vue';
+import echo from '../services/echo';
+import { useNotifications } from '../stores/useNotifications';
+import { isLiveEnabled } from '../services/features';
 
 const route = useRoute();
 const idOrSlug = route.params.idOrSlug;
@@ -167,6 +199,14 @@ const passwordInput = ref('');
 const verifying = ref(false);
 const copied = ref(false);
 const unlockError = ref(null);
+const toast = useNotifications();
+
+const deviceId = ref(localStorage.getItem('device_id') || Math.random().toString(36).substring(2, 11));
+if (!localStorage.getItem('device_id')) localStorage.setItem('device_id', deviceId.value);
+
+const joining = ref(false);
+const joinStatus = ref('none'); // none, pending, allowed
+const isAllowed = computed(() => canEdit.value || joinStatus.value === 'allowed');
 
 const isPasswordProtected = computed(() => note.value?.is_protected && !unlocked.value);
 const isExpired = computed(() => note.value?.expires_at && new Date(note.value.expires_at) <= new Date());
@@ -215,8 +255,59 @@ async function fetchNote() {
     error.value = err;
   } finally {
     loading.value = false;
+    if (note.value?.is_live) setupEcho();
   }
 }
+
+function setupEcho() {
+  if (!note.value) return;
+  
+  echo.channel(`note.${note.value.id}`)
+    .listen('.updated', (e) => {
+      console.log('Real-time update received', e);
+      // Removed deviceId check here so viewers always see updates, even in same browser tabs
+      note.value.content = e.content;
+    });
+
+  // Also listen for permission updates if we are in pending state
+  if (joinStatus.value === 'pending') {
+    // This could also be done via polling for simplicity in a guest environment 
+    // but better if we had a per-device private channel.
+    // For now, let's poll every 5 seconds if pending.
+    const poll = setInterval(async () => {
+       if (joinStatus.value !== 'pending') { clearInterval(poll); return; }
+       try {
+         const resp = await api.get(`/notes/${idOrSlug}`);
+         const conn = resp.data.data.connections?.find(c => c.device_id === deviceId.value);
+         if (conn?.status === 'allowed') {
+           joinStatus.value = 'allowed';
+           toast.success('Access granted! Content is now syncing live.');
+           clearInterval(poll);
+         }
+       } catch {}
+    }, 5000);
+  }
+}
+
+async function joinLive() {
+  joining.value = true;
+  try {
+    const resp = await api.post(`/notes/${note.value.id}/join-live`, {
+      device_id: deviceId.value,
+      device_name: navigator.userAgent.substring(0, 30) // Simple name
+    });
+    joinStatus.value = 'pending';
+    toast.success('Request sent to owner');
+  } catch (err) {
+    toast.error('Failed to send request');
+  } finally {
+    joining.value = false;
+  }
+}
+
+onUnmounted(() => {
+  if (note.value) echo.leave(`note.${note.value.id}`);
+});
 
 async function handleUnlock() {
   unlockError.value = null; // Clear prev error
@@ -258,6 +349,11 @@ async function copyContent() {
   const plain = text.replace(/<[^>]*>/g, ''); // strip HTML tags
   await navigator.clipboard.writeText(plain);
 }
+
+watch(() => note.value?.is_live, (val) => {
+  if (val) setupEcho();
+  else if (note.value) echo.leave(`note.${note.value.id}`);
+});
 
 onMounted(fetchNote);
 </script>

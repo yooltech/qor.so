@@ -57,12 +57,16 @@
 
     <div v-else-if="note" class="max-w-4xl mx-auto px-6 py-10">
       <NoteEditor
+        :initial-id="note.id"
         :initial-title="note.title || ''"
         :initial-content="note.content || ''"
         :initial-format="note.format || 'text'"
         :initial-slug="note.slug || ''"
         :initial-password="unlocked ? passwordInput : ''"
+        :initial-is-live="note.is_live"
+        :initial-live-permission="note.live_permission || 'view'"
         mode="edit"
+        :is-live-enabled="isLiveEnabled()"
         :saving="saving"
         @save="handleUpdate"
         @cancel="router.push(`/${note.slug || note.id}`)"
@@ -119,6 +123,7 @@ import api from '../services/api';
 import NoteEditor from '../components/NoteEditor.vue';
 import Navbar from '../components/Navbar.vue';
 import { useNotifications } from '../stores/useNotifications';
+import { isLiveEnabled } from '../services/features';
 
 const route = useRoute();
 const router = useRouter();

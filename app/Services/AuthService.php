@@ -8,15 +8,18 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use App\Models\Note;
 
 class AuthService
 {
     public function sendOtp(string $email)
     {
-        // Generate a 6-digit code
+        // 1. Generate a 6-digit code
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        // Store in DB, expiring in 15 minutes
+        // 2. Store OTP in DB
         UserOtp::updateOrCreate(
             ['email' => $email],
             [
@@ -25,10 +28,47 @@ class AuthService
             ]
         );
 
-        // For now, we log it. In a real app, this would send an email.
-        \Log::info("OTP for {$email}: {$code}");
+        // 3. Generate a 15-min signed Magic Link
+        $expires = now()->addMinutes(15);
+        $signature = hash_hmac('sha256', "magic-login:{$email}:{$expires->timestamp}", config('app.key'));
+        $magicLink = config('app.url') . "/login/verify?email=" . urlencode($email) . 
+                      "&expires=" . $expires->timestamp . 
+                      "&signature=" . $signature;
+
+        // 4. Send UNIFIED email with BOTH code and link
+        Mail::to($email)->send(new \App\Mail\OtpMail($code, $magicLink));
         
         return true;
+    }
+
+    public function verifyMagicLink(string $email, string $expires, string $signature)
+    {
+        // Verify expiration
+        if (now()->timestamp > (int) $expires) {
+            throw ValidationException::withMessages([
+                'link' => ['This login link has expired.'],
+            ]);
+        }
+
+        // Verify signature
+        $expected = hash_hmac('sha256', "magic-login:{$email}:{$expires}", config('app.key'));
+        
+        if (!hash_equals($expected, $signature)) {
+            throw ValidationException::withMessages([
+                'link' => ['Invalid login link.'],
+            ]);
+        }
+
+        // Valid link, find or create the user
+        $user = User::firstOrCreate(
+            ['email' => $email],
+            ['name' => explode('@', $email)[0], 'password' => Hash::make(Str::random(16))]
+        );
+
+        return [
+            'user' => $user,
+            'token' => $user->createToken('auth_token')->plainTextToken,
+        ];
     }
 
     public function verifyOtp(string $email, string $code)

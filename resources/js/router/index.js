@@ -24,19 +24,9 @@ const routes = [
         component: Profile,
     },
     {
-        path: '/:idOrSlug',
-        name: 'note-view',
-        component: NoteView,
-    },
-    {
         path: '/notes/:id/edit',
         name: 'note-edit',
         component: NoteEdit,
-    },
-    {
-        path: '/file/:idOrSlug',
-        name: 'file-view',
-        component: FileView,
     },
     {
         path: '/dashboard',
@@ -47,6 +37,12 @@ const routes = [
     {
         path: '/login',
         name: 'login',
+        component: Login,
+        meta: { guest: true }
+    },
+    {
+        path: '/login/verify',
+        name: 'login-verify',
         component: Login,
         meta: { guest: true }
     },
@@ -79,6 +75,16 @@ const routes = [
         name: 'files',
         component: Files,
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/:idOrSlug',
+        name: 'note-view',
+        component: NoteView,
+    },
+    {
+        path: '/file/:idOrSlug',
+        name: 'file-view',
+        component: FileView,
     },
 ];
 

@@ -78,6 +78,11 @@ class NoteService
             ->orWhere('id', $idOrSlug)
             ->firstOrFail();
 
+        return $this->prepareForView($note, $password);
+    }
+
+    public function prepareForView(Note $note, ?string $password = null): Note
+    {
         // Check expiration
         if ($note->expires_at && $note->expires_at->isPast()) {
             abort(404, 'Note expired');
@@ -89,17 +94,23 @@ class NoteService
                 if ($note->password_hash) {
                     if ($password && password_verify($password, $note->password_hash)) {
                         $note->content = $this->decryptWithPassword($note->content, $password);
+                        $note->is_protected = false;
                     } else {
                         // Don't decrypt if no password or wrong password
                         $note->content = null;
+                        $note->is_protected = true;
                     }
                 } else {
                     // Standard decryption for owned notes without passwords
                     $note->content = decrypt($note->content);
+                    $note->is_protected = false;
                 }
             } catch (\Exception $e) {
                 $note->content = null;
+                $note->is_protected = true;
             }
+        } else {
+            $note->is_protected = false;
         }
 
         return $note;
@@ -192,5 +203,49 @@ class NoteService
     public function deleteNote(Note $note)
     {
         $note->delete();
+    }
+
+    public function checkSlugAvailability(string $slug, ?string $excludeId = null)
+    {
+        // Standardize slug
+        $slug = Str::slug($slug);
+        
+        // Reserved keywords (routes we don't want to shadow)
+        $reserved = ['login', 'register', 'profile', 'dashboard', 'notes', 'files', 'auth', 'api', 'verify'];
+        if (in_array($slug, $reserved)) {
+            return [
+                'available' => false,
+                'suggestions' => [
+                    $slug . '-' . rand(100, 999),
+                    $slug . '-' . rand(100, 999),
+                    $slug . '-' . rand(100, 999)
+                ]
+            ];
+        }
+
+        $query = Note::where('slug', $slug);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $isAvailable = !$query->exists();
+        $suggestions = [];
+
+        if (!$isAvailable) {
+            // Generate 3 unique suggestions
+            for ($i = 1; $i <= 3; $i++) {
+                $suffix = rand(100, 999);
+                $suggested = $slug . '-' . $suffix;
+                // Double check if suggestion is taken
+                if (!Note::where('slug', $suggested)->exists()) {
+                    $suggestions[] = $suggested;
+                }
+            }
+        }
+
+        return [
+            'available' => $isAvailable,
+            'suggestions' => $suggestions
+        ];
     }
 }

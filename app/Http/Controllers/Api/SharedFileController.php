@@ -26,6 +26,10 @@ class SharedFileController extends Controller
 
     public function store(StoreFileRequest $request): JsonResponse
     {
+        if (!env('FILE_UPLOAD_ENABLED', true)) {
+            return response()->json(['message' => 'File uploading is disabled'], 412);
+        }
+
         $userId = $request->user()?->id;
         $file = $this->fileService->uploadFile($request->file('file'), $request->validated(), $userId);
         return response()->json(['message' => 'File uploaded successfully', 'data' => $file], 201);

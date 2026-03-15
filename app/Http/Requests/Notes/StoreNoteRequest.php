@@ -22,6 +22,8 @@ class StoreNoteRequest extends FormRequest
             'expires_in'   => ['nullable', 'integer', 'min:1'],
             'expires_at'   => ['nullable', 'date'],
             'is_encrypted' => ['sometimes', 'boolean'],
+            'is_live'      => ['sometimes', 'boolean'],
+            'live_permission' => ['sometimes', 'string', 'in:view,edit'],
         ];
     }
 }

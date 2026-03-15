@@ -30,6 +30,35 @@ class AuthController extends Controller
         ]);
     }
 
+    public function requestMagicLink(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $this->authService->sendMagicLink($data['email']);
+
+        return response()->json([
+            'message' => 'Magic link sent successfully',
+        ]);
+    }
+
+    public function verifyMagicLink(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'expires' => 'required|string',
+            'signature' => 'required|string',
+        ]);
+
+        $result = $this->authService->verifyMagicLink($data['email'], $data['expires'], $data['signature']);
+
+        return response()->json([
+            'message' => 'Login successful',
+            'data' => $result,
+        ]);
+    }
+
     public function verifyOtp(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -58,7 +87,6 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $data = $request->validate([
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
             'name' => 'nullable|string|max:255',
             'display_name' => 'nullable|string|max:255',
             'avatar_url' => 'nullable|url|max:2048',
