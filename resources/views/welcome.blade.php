@@ -5,8 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="favicon.png">
         <meta name="api-base-url" content="{{ rtrim(config('app.url'), '/') }}/api">
+        <meta name="base-url" content="{{ rtrim(config('app.url'), '/') }}">
         <meta name="feature-live-sharing" content="{{ env('NOTE_LIVE_ENABLED', true) ? 'true' : 'false' }}">
         <meta name="feature-file-upload" content="{{ env('FILE_UPLOAD_ENABLED', true) ? 'true' : 'false' }}">
+        <meta name="about-show-roadmap" content="{{ env('ABOUT_SHOW_ROADMAP', true) ? 'true' : 'false' }}">
+        <meta name="about-show-team" content="{{ env('ABOUT_SHOW_TEAM', true) ? 'true' : 'false' }}">
+        <meta name="about-show-tech" content="{{ env('ABOUT_SHOW_TECH', true) ? 'true' : 'false' }}">
+        <meta name="about-show-open-source" content="{{ env('ABOUT_SHOW_OPEN_SOURCE', true) ? 'true' : 'false' }}">
         <title>qor.so — Fast, Secure Note Sharing</title>
         <meta name="description" content="qor.so is a lightweight, secure platform for sharing notes and files. No tracking, encrypted at rest, and built for speed.">
         <meta name="keywords" content="note sharing, pastebin, secure notes, encrypted sharing, qor.so, developer tools, code snippets">

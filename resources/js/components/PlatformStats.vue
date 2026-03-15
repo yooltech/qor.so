@@ -3,7 +3,7 @@
     <Loader2 class="w-5 h-5 animate-spin text-muted-foreground" />
   </div>
   <div v-else class="border-t">
-    <div class="max-w-4xl mx-auto px-6 py-10">
+    <div class="py-10">
       <p class="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider mb-6">
         Platform Stats
       </p>

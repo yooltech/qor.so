@@ -43,14 +43,14 @@
     </div>
 
     <!-- Content -->
-    <div class="px-6 pb-20 flex-1 space-y-8">
+    <div class="px-6 pb-1 flex-1 space-y-8">
       <div>
         <NoteEditor v-if="mode === 'note'" />
         <FileUploader v-else />
       </div>
 
-      <!-- Recent Notes (for guests) -->
-      <div v-if="recentNotes.length > 0 && !user" class="max-w-4xl mx-auto animate-fade-in">
+      <!-- Recent Notes -->
+      <div v-if="recentNotes.length > 0" class="max-w-4xl mx-auto animate-fade-in">
         <div class="flex items-center justify-between mb-4 border-b pb-2">
           <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
             <History class="w-4 h-4 text-primary" />
@@ -81,31 +81,13 @@
           </router-link>
         </div>
       </div>
+
+      <!-- Footer Stats -->
+      <div class="max-w-4xl mx-auto">
+        <PlatformStats />
+      </div>
     </div>
 
-    <!-- Footer Stats -->
-    <PlatformStats />
-
-    <!-- Footer Links -->
-    <footer class="border-t py-8 mt-auto">
-      <div class="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-muted-foreground">
-        <div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center">
-            <img src="/chs/noteshare-express/logo.png" alt="qor.so" class="w-4 h-4 rounded-sm" />
-          </div>
-          <span class="text-xs font-semibold text-foreground tracking-tight">qor.so</span>
-          <span class="text-[10px]">&copy; {{ new Date().getFullYear() }}</span>
-        </div>
-        
-        <div class="flex items-center gap-6">
-          <a href="https://github.com/yooltech/qor.so" target="_blank" class="text-xs font-medium hover:text-primary transition-colors flex items-center gap-1.5">
-            <Github class="w-3.5 h-3.5" />
-            GitHub
-          </a>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-secondary font-bold uppercase tracking-widest">Open Source</span>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 

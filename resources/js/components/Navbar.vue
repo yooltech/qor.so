@@ -3,7 +3,7 @@
     <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
       <router-link to="/" class="flex items-center gap-2.5 group">
         <div class="p-1 rounded-lg bg-emerald-500/10 transition-transform group-hover:scale-110">
-          <img src="/chs/noteshare-express/logo.png" alt="qor.so" class="w-7 h-7 rounded-md object-cover" />
+          <img :src="config.asset('logo.png')" alt="qor.so" class="w-7 h-7 rounded-md object-cover" />
         </div>
         <span class="font-bold text-xl tracking-tight text-foreground">qor.so</span>
       </router-link>
@@ -47,6 +47,7 @@
 import { ref, onMounted } from 'vue';
 import { Sun, Moon, LayoutDashboard, LogIn } from 'lucide-vue-next';
 import api from '../services/api';
+import config from '../services/config';
 
 const isDark = ref(false);
 const user = ref(null);

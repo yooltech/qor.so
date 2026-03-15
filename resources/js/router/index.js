@@ -11,6 +11,9 @@ import NoteView from '../pages/NoteView.vue';
 import NoteEdit from '../pages/NoteEdit.vue';
 import FileView from '../pages/FileView.vue';
 import Profile from '../pages/Profile.vue';
+import About from '../pages/About.vue';
+import Terms from '../pages/Terms.vue';
+import FAQ from '../pages/FAQ.vue';
 
 const routes = [
     {
@@ -75,6 +78,21 @@ const routes = [
         name: 'files',
         component: Files,
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/about',
+        name: 'about',
+        component: About,
+    },
+    {
+        path: '/terms',
+        name: 'terms',
+        component: Terms,
+    },
+    {
+        path: '/faq',
+        name: 'faq',
+        component: FAQ,
     },
     {
         path: '/:idOrSlug',

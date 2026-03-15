@@ -163,7 +163,6 @@
               Waiting for owner to allow you...
             </p>
           </div>
-
         </div>
       </div>
     </div>
