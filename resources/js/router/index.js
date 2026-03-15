@@ -106,8 +106,10 @@ const routes = [
     },
 ];
 
+import config from '../services/config';
+
 const router = createRouter({
-    history: createWebHistory('/chs/noteshare-express/'),
+    history: createWebHistory(config.routerBase),
     routes,
 });
 

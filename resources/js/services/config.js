@@ -13,6 +13,7 @@ const getBaseUrl = () => {
 };
 
 const baseUrl = getBaseUrl();
+const routerBase = new URL(baseUrl || window.location.origin, window.location.origin).pathname;
 
 const getFeature = (name) => {
     return document.querySelector(`meta[name="${name}"]`)?.content === 'true';
@@ -20,6 +21,7 @@ const getFeature = (name) => {
 
 export const config = {
     baseUrl,
+    routerBase,
     asset: (path) => {
         const cleanPath = path.replace(/^\//, '');
         return `${baseUrl}/${cleanPath}`;
