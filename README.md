@@ -2,7 +2,15 @@
 
 qor.so is a lightweight, high-performance web platform built with Laravel and Vue.js for instant, secure sharing of notes, code snippets, and files. It's designed for speed, privacy, and zero-friction collaboration.
 
-![Brand Logo](https://github.com/yooltech/qor.so/raw/main/public/logo.png)
+<p align="center">
+  <img src="https://github.com/yooltech/qor.so/raw/main/public/logo.png" width="120" alt="qor.so logo">
+</p>
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="https://github.com/yooltech/qor.so/raw/main/public/screenshoot.png" width="900" alt="qor.so screenshot">
+</p>
 
 ## 🚀 Key Features
 
