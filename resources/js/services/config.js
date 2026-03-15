@@ -22,6 +22,7 @@ const getFeature = (name) => {
 export const config = {
     baseUrl,
     routerBase,
+    appVersion: document.querySelector('meta[name="app-version"]')?.content || 'v1.0.0',
     asset: (path) => {
         const cleanPath = path.replace(/^\//, '');
         return `${baseUrl}/${cleanPath}`;

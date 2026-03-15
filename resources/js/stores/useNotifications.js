@@ -5,7 +5,7 @@ const state = reactive({
 });
 
 export function useNotifications() {
-  const show = (message, type = 'info', duration = 3000) => {
+  const show = (message, type = 'info', duration = 5000) => {
     const id = Date.now();
     state.notifications.push({ id, message, type });
     
@@ -15,7 +15,10 @@ export function useNotifications() {
   };
 
   const remove = (id) => {
-    state.notifications = state.notifications.filter(n => n.id !== id);
+    const index = state.notifications.findIndex(n => n.id === id);
+    if (index !== -1) {
+      state.notifications.splice(index, 1);
+    }
   };
 
   return {

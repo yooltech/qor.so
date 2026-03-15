@@ -12,6 +12,7 @@
         <meta name="about-show-team" content="{{ env('ABOUT_SHOW_TEAM', true) ? 'true' : 'false' }}">
         <meta name="about-show-tech" content="{{ env('ABOUT_SHOW_TECH', true) ? 'true' : 'false' }}">
         <meta name="about-show-open-source" content="{{ env('ABOUT_SHOW_OPEN_SOURCE', true) ? 'true' : 'false' }}">
+        <meta name="app-version" content="{{ env('APP_VERSION', 'v1.0.0') }}">
         <title>qor.so — Fast, Secure Note Sharing</title>
         <meta name="description" content="qor.so is a lightweight, secure platform for sharing notes and files. No tracking, encrypted at rest, and built for speed.">
         <meta name="keywords" content="note sharing, pastebin, secure notes, encrypted sharing, qor.so, developer tools, code snippets">

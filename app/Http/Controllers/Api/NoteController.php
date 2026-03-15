@@ -70,10 +70,19 @@ class NoteController extends Controller
             'format' => ['sometimes', 'string', 'in:text,html,json'],
             'slug' => ['nullable', 'string', 'max:100'],
             'password' => ['nullable', 'string', 'max:255'],
+            'current_password' => ['nullable', 'string'],
             'expires_in' => ['nullable', 'integer', 'min:1'],
             'is_live' => ['sometimes', 'boolean'],
             'live_permission' => ['sometimes', 'string', 'in:view,edit'],
         ]);
+
+        // If note is protected, require current password to update anything
+        if ($note->password_hash) {
+            $currentPassword = $request->input('current_password');
+            if (!$currentPassword || !password_verify($currentPassword, $note->password_hash)) {
+                return response()->json(['message' => 'Invalid or missing current password'], 401);
+            }
+        }
 
         // Force live sharing off if disabled
         if (!env('NOTE_LIVE_ENABLED', true)) {
@@ -156,14 +165,31 @@ class NoteController extends Controller
             return response()->json(['message' => 'Live sharing is disabled'], 412);
         }
 
+        if (!$note->is_live) {
+            return response()->json(['message' => 'Live sharing is not enabled for this note'], 403);
+        }
+
         $validated = $request->validate([
             'content' => 'required|string',
             'device_id' => 'required|string',
         ]);
 
+        // Authorization check
+        if ($note->user_id !== null) {
+            $isOwner = auth('sanctum')->id() === $note->user_id;
+            $isAllowedGuest = $note->connections()
+                ->where('device_id', $validated['device_id'])
+                ->where('status', 'allowed')
+                ->where('permissions', 'edit')
+                ->exists();
+
+            if (!$isOwner && !$isAllowedGuest) {
+                return response()->json(['message' => 'Unauthorized to broadcast'], 403);
+            }
+        }
+
         \Log::info('Broadcasting update for note: ' . $note->id . ' from device: ' . $validated['device_id']);
-        broadcast(new NoteUpdated($note, $validated['content'], $validated['device_id']))->toOthers();
-        \Log::info('Broadcast event dispatched for note: ' . $note->id);
+        broadcast(new \App\Events\NoteUpdated($note, $validated['content'], $validated['device_id']))->toOthers();
 
         return response()->json(['status' => 'success']);
     }

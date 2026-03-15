@@ -14,6 +14,8 @@ Route::get('notes/check-slug', [NoteController::class, 'checkSlug']);
 Route::get('/notes/{note}', [NoteController::class, 'show']);
 Route::put('notes/{note}', [NoteController::class, 'update']);
 Route::patch('notes/{note}', [NoteController::class, 'update']);
+Route::post('notes/{note}/broadcast', [NoteController::class, 'broadcastUpdate']);
+Route::post('notes/{note}/join-live', [NoteController::class, 'joinLive']);
 
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('login');
 
@@ -35,11 +37,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notes', [NoteController::class, 'index']);
     Route::delete('notes/{note}', [NoteController::class, 'destroy']);
     
-    // Live Sharing Routes
+    // Live Sharing Routes (Owner only)
     Route::post('notes/{note}/toggle-live', [NoteController::class, 'toggleLive']);
-    Route::post('notes/{note}/join-live', [NoteController::class, 'joinLive']);
     Route::put('notes/{note}/connections/{connection}', [NoteController::class, 'updateConnection']);
-    Route::post('notes/{note}/broadcast', [NoteController::class, 'broadcastUpdate']);
 
     // Shared Files (auth-only: list, delete)
     Route::get('/shared-files', [\App\Http\Controllers\Api\SharedFileController::class, 'index']);

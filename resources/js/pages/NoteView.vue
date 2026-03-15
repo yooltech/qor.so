@@ -100,6 +100,18 @@
               <span class="font-mono ">{{ note.title }}</span>
             </div>
             <div class="flex items-center gap-1">
+              <!-- Save changes button -->
+              <button
+                v-if="isDirty"
+                @click="saveChanges"
+                :disabled="savingChanges"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-bold uppercase transition-all hover:brightness-110 shadow-sm disabled:opacity-50 animate-fade-in"
+              >
+                <Loader2 v-if="savingChanges" class="w-3 h-3 animate-spin" />
+                <Save v-else class="w-3 h-3" />
+                Save Changes
+              </button>
+
               <button
                 @click="copyLink"
                 class="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
@@ -131,6 +143,7 @@
               v-if="note.format === 'html' || note.format === 'text'"
               class="prose prose-neutral dark:prose-invert max-w-none px-8 py-6 text-foreground leading-7 tiptap"
               v-html="cleanedContent"
+              @click="handleContentClick($event)"
             />
 
             <!-- Content: JSON -->
@@ -172,7 +185,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { FileText, Loader2, Lock, Clock, Copy, Check, ClipboardCopy, Pencil, Radio, Smartphone } from 'lucide-vue-next';
+import { FileText, Loader2, Lock, Clock, Copy, Check, ClipboardCopy, Pencil, Radio, Smartphone, Save } from 'lucide-vue-next';
 import api from '../services/api';
 import Navbar from '../components/Navbar.vue';
 import LiveControl from '../components/LiveControl.vue';
@@ -202,6 +215,9 @@ const toast = useNotifications();
 
 const deviceId = ref(localStorage.getItem('device_id') || Math.random().toString(36).substring(2, 11));
 if (!localStorage.getItem('device_id')) localStorage.setItem('device_id', deviceId.value);
+
+const isDirty = ref(false);
+const savingChanges = ref(false);
 
 const joining = ref(false);
 const joinStatus = ref('none'); // none, pending, allowed
@@ -353,6 +369,89 @@ watch(() => note.value?.is_live, (val) => {
   if (val) setupEcho();
   else if (note.value) echo.leave(`note.${note.value.id}`);
 });
+
+async function handleContentClick(event) {
+  const target = event.target;
+  
+  // Look for checkbox inside taskList
+  if (target.tagName === 'INPUT' && target.getAttribute('type') === 'checkbox') {
+    const li = target.closest('li[data-type="taskItem"]');
+    if (!li) return;
+
+    // Prevent default so we can control the state after successful update if needed, 
+    // but Tiptap structure is quite specific.
+    const isChecked = target.checked;
+    
+    // We need to update note.value.content (the source HTML)
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(note.value.content, 'text/html');
+
+    // Use index-based matching as it's the safest way to map rendered DOM to raw HTML
+    const allLis = Array.from(event.currentTarget.querySelectorAll('li[data-type="taskItem"]'));
+    const index = allLis.indexOf(li);
+    
+    if (index !== -1) {
+      const targetLis = doc.querySelectorAll('li[data-type="taskItem"]');
+      const targetLi = targetLis[index];
+      
+      if (targetLi) {
+        targetLi.setAttribute('data-checked', isChecked ? 'true' : 'false');
+        const checkbox = targetLi.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          if (isChecked) checkbox.setAttribute('checked', 'checked');
+          else checkbox.removeAttribute('checked');
+        }
+        
+        // Update local state immediately for UI response
+        const newHtml = doc.body.innerHTML;
+        note.value.content = newHtml;
+        
+        // Mark as dirty instead of auto-saving
+        isDirty.value = true;
+      }
+    }
+  }
+}
+
+async function saveChanges() {
+  if (!note.value) return;
+  savingChanges.value = true;
+  try {
+    await api.put(`/notes/${note.value.id}`, {
+      content: note.value.content,
+      current_password: passwordInput.value || undefined
+    });
+
+    isDirty.value = false;
+    toast.success('Changes saved successfully!');
+
+    // Also broadcast if it's a live note
+    const trulyLive = note.value.is_live === true || note.value.is_live === 1 || note.value.is_live === '1';
+    if (trulyLive) {
+      broadcastUpdate(note.value.content);
+    }
+  } catch (err) {
+    console.error('Failed to sync checklist state', err);
+    toast.error('Failed to save changes');
+  } finally {
+    savingChanges.value = false;
+  }
+}
+
+async function broadcastUpdate(content) {
+  // Extra safety check
+  const trulyLive = note.value?.is_live === true || note.value?.is_live === 1 || note.value?.is_live === '1';
+  if (!trulyLive) return;
+  
+  try {
+    await api.post(`/notes/${note.value.id}/broadcast`, {
+      content: content,
+      device_id: deviceId.value
+    });
+  } catch (err) {
+    console.error('Broadcast failed', err);
+  }
+}
 
 onMounted(fetchNote);
 </script>

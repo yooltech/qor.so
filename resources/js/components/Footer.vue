@@ -6,7 +6,7 @@
           <img :src="config.asset('logo.png')" alt="qor.so" class="w-4 h-4 rounded-sm" />
         </div>
         <span class="text-xs font-semibold text-foreground tracking-tight">qor.so</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded bg-foreground/5 font-mono">v1.2.0</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded bg-foreground/5 font-mono">{{ config.appVersion }}</span>
         <span class="text-[10px]">&copy; {{ new Date().getFullYear() }}</span>
       </div>
       

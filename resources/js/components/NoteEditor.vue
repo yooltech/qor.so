@@ -462,8 +462,17 @@ const editor = useEditor({
       bulletList:   { keepMarks: true, keepAttributes: false },
       orderedList:  { keepMarks: true, keepAttributes: false },
     }),
-    TaskList,
-    TaskItem.configure({ nested: true }),
+    TaskList.configure({
+      HTMLAttributes: {
+        class: 'task-list',
+      },
+    }),
+    TaskItem.configure({ 
+      nested: true,
+      HTMLAttributes: {
+        class: 'task-item',
+      },
+    }),
     Placeholder.configure({
       placeholder: 'Start writing...',
       showOnlyCurrent: true,
